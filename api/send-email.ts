@@ -1,8 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { Resend } from 'resend';
 import { createClient } from '@supabase/supabase-js';
-
-const resend = new Resend(process.env.RESEND_API_KEY);
 
 const supabase = createClient(
   process.env.VITE_BOLT_DATABASE_URL!,
@@ -134,17 +131,30 @@ export default async function handler(
 
     const htmlContent = generatePlaybookHTML(businessIdea, playbook);
 
-    const { data, error } = await resend.emails.send({
-      from: 'Find Your Side <hello@findyourside.com>',
-      to: email,
-      subject: `Your 30-Day Launch Playbook: ${businessIdea}`,
-      html: htmlContent,
+    // Send email via Loops.so API
+    const response = await fetch('https://app.loops.so/api/v1/transactional', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${process.env.LOOPS_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        email: email,
+        transactionalId: 'playbook-delivery', // You'll create this in Loops dashboard
+        dataVariables: {
+          businessIdea: businessIdea,
+          playbookHtml: htmlContent,
+        },
+      }),
     });
 
-    if (error) {
-      console.error('Resend error:', error);
+    if (!response.ok) {
+      const error = await response.json();
+      console.error('Loops error:', error);
       return res.status(500).json({ error: 'Failed to send email', details: error });
     }
+
+    const data = await response.json();
 
     if (optInDay1) {
       await supabase.from('accountability_optins').insert({
@@ -154,7 +164,7 @@ export default async function handler(
       });
     }
 
-    return res.status(200).json({ success: true, messageId: data?.id });
+    return res.status(200).json({ success: true, messageId: data.id });
 
   } catch (error) {
     console.error('Error sending email:', error);
