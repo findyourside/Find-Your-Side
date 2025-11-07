@@ -435,7 +435,6 @@ export default function Quiz({ onComplete, onBack }: QuizProps) {
             </div>
           )}
 
-
           <div className="flex gap-4 mt-8">
             <button
               onClick={handlePrevious}
