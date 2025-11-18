@@ -1,9 +1,10 @@
 import { useState } from 'react';
-import { ChevronLeft, Calendar, Clock, DollarSign, Download, Mail, Eye } from 'lucide-react';
-import InterestCapture from './InterestCapture';
-import FeatureValidation from './FeatureValidation';
-import EmailPreviewModal from './EmailPreviewModal';
+import { ChevronLeft, ChevronDown, ChevronUp, Download, Mail, CheckCircle } from 'lucide-react';
+import { supabase } from './lib/supabase';
 import { analytics } from './lib/analytics';
+import FeatureValidation from './FeatureValidation';
+import InterestCapture from './InterestCapture';
+import EmailPreviewModal from './EmailPreviewModal';
 
 interface DailyTask {
   day: number;
@@ -38,140 +39,139 @@ interface PlaybookDisplayProps {
 }
 
 export default function PlaybookDisplay({ playbook, onBack, userEmail, timeCommitment, budget }: PlaybookDisplayProps) {
-  const [emailSending, setEmailSending] = useState(false);
+  const [expandedWeeks, setExpandedWeeks] = useState<Set<number>>(new Set([1]));
+  const [completedTasks, setCompletedTasks] = useState<Set<string>>(new Set());
+  const [isSendingEmail, setIsSendingEmail] = useState(false);
   const [emailSent, setEmailSent] = useState(false);
-  const [pdfGenerating, setPdfGenerating] = useState(false);
-  const [accountabilityOptIn, setAccountabilityOptIn] = useState(false);
-  const [accountabilitySubmitting, setAccountabilitySubmitting] = useState(false);
-  const [accountabilitySubmitted, setAccountabilitySubmitted] = useState(false);
   const [showEmailPreview, setShowEmailPreview] = useState(false);
+  const [optInDay1, setOptInDay1] = useState(false);
 
-  const handleDownloadPDF = async () => {
-    setPdfGenerating(true);
+  const toggleWeek = (weekNumber: number) => {
+    setExpandedWeeks((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(weekNumber)) {
+        newSet.delete(weekNumber);
+      } else {
+        newSet.add(weekNumber);
+      }
+      return newSet;
+    });
+  };
+
+  const toggleTask = (weekNumber: number, day: number) => {
+    const taskId = `${weekNumber}-${day}`;
+    setCompletedTasks((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(taskId)) {
+        newSet.delete(taskId);
+      } else {
+        newSet.add(taskId);
+      }
+      return newSet;
+    });
+  };
+
+  const handleDownload = () => {
+    const playbookText = generatePlaybookText();
+    const blob = new Blob([playbookText], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${playbook.businessName.replace(/\s+/g, '_')}_30Day_Playbook.txt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
     analytics.playbookDownloaded();
-    try {
-      const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-pdf`,
-        {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            playbook: {
-              ...playbook,
-              timeCommitment,
-              budget,
-            },
-          }),
-        }
-      );
-
-      if (response.ok) {
-        const blob = await response.blob();
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        const sanitizedBusinessName = playbook.businessName
-          .replace(/[^a-z0-9]/gi, '-')
-          .replace(/-+/g, '-')
-          .replace(/^-|-$/g, '')
-          .substring(0, 50);
-        a.download = `FindYourSide-${sanitizedBusinessName}-30DayPlan.pdf`;
-        document.body.appendChild(a);
-        a.click();
-        window.URL.revokeObjectURL(url);
-        document.body.removeChild(a);
-      } else {
-        alert('Failed to generate PDF. Please try again.');
-      }
-    } catch (err) {
-      console.error('Error generating PDF:', err);
-      alert('Failed to generate PDF. Please try again.');
-    } finally {
-      setPdfGenerating(false);
-    }
   };
 
-  const handleEmailPlaybook = async () => {
+  const generatePlaybookText = () => {
+    let text = `${playbook.businessName.toUpperCase()}\n30-DAY LAUNCH PLAYBOOK\n\n`;
+    text += `OVERVIEW\n${playbook.overview}\n\n`;
+    text += `TIME COMMITMENT: ${timeCommitment || 'Not specified'}\n`;
+    if (budget) text += `BUDGET: ${budget}\n`;
+    text += `\n${'='.repeat(60)}\n\n`;
+
+    playbook.weeks.forEach((week) => {
+      text += `WEEK ${week.week}: ${week.title.toUpperCase()}\n`;
+      text += `${'-'.repeat(60)}\n`;
+      text += `Focus: ${week.focusArea}\n`;
+      text += `Success Metric: ${week.successMetric}\n`;
+      text += `Estimated Time: ${week.totalTime}\n\n`;
+
+      week.dailyTasks.forEach((task) => {
+        text += `  Day ${task.day}: ${task.title}\n`;
+        text += `  Time: ${task.timeEstimate}\n`;
+        text += `  ${task.description}\n`;
+        if (task.resources && task.resources.length > 0) {
+          text += `  Resources: ${task.resources.join(', ')}\n`;
+        }
+        text += `\n`;
+      });
+
+      text += `\n`;
+    });
+
+    return text;
+  };
+
+  const handleSendEmail = async () => {
     if (!userEmail) {
-      alert('Email address not available');
+      alert('Email address not found. Please download the playbook instead.');
       return;
     }
 
-    setEmailSending(true);
+    setIsSendingEmail(true);
+
     try {
-      const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/email-playbook`,
-        {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            email: userEmail,
-            playbook: {
-              ...playbook,
-              timeCommitment,
-              budget,
-            },
-          }),
-        }
-      );
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-playbook-email`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: userEmail,
+          playbook: playbook,
+          timeCommitment: timeCommitment,
+          budget: budget,
+          optInDay1: optInDay1,
+          playbookId: playbook.playbookId,
+        }),
+      });
 
-      if (response.ok) {
-        setEmailSent(true);
-        analytics.playbookEmailSent();
-      } else {
-        alert('Failed to send email. Please try again.');
+      if (!response.ok) {
+        throw new Error('Failed to send email');
       }
-    } catch (err) {
-      console.error('Error sending email:', err);
-      alert('Failed to send email. Please try again.');
-    } finally {
-      setEmailSending(false);
-    }
-  };
 
-  const handleAccountabilityOptIn = async () => {
-    if (!userEmail || !accountabilityOptIn || accountabilitySubmitted || !playbook.playbookId) {
-      return;
-    }
+      setEmailSent(true);
+      analytics.playbookEmailSent();
 
-    setAccountabilitySubmitting(true);
-    try {
-      const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/accountability-optin`,
-        {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            playbookId: playbook.playbookId,
-          }),
+      if (optInDay1) {
+        const { error } = await supabase.from('day1_emails').insert({
+          email: userEmail,
+          playbook_id: playbook.playbookId,
+          business_name: playbook.businessName,
+        });
+
+        if (error) {
+          console.error('Error saving Day 1 opt-in:', error);
         }
-      );
-
-      if (response.ok) {
-        setAccountabilitySubmitted(true);
-      } else {
-        alert('Failed to save reminder preference. Please try again.');
       }
-    } catch (err) {
-      console.error('Error saving accountability opt-in:', err);
-      alert('Failed to save reminder preference. Please try again.');
+
+      setTimeout(() => setEmailSent(false), 5000);
+    } catch (error) {
+      console.error('Error sending email:', error);
+      alert('Failed to send email. Please try downloading instead.');
     } finally {
-      setAccountabilitySubmitting(false);
+      setIsSendingEmail(false);
+      setShowEmailPreview(false);
     }
   };
 
   return (
     <div className="min-h-screen bg-white">
-      <header className="border-b border-gray-100 print:hidden">
+      <header className="border-b border-gray-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
           <div className="flex items-center justify-center">
             <img
@@ -184,198 +184,180 @@ export default function PlaybookDisplay({ playbook, onBack, userEmail, timeCommi
       </header>
 
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="mb-8 print:hidden">
+        <div className="mb-8">
           <button
             onClick={onBack}
             className="flex items-center text-gray-600 hover:text-gray-900 transition-colors"
           >
             <ChevronLeft className="w-5 h-5 mr-1" />
-            Back to Ideas
+            Back to Home
           </button>
         </div>
 
-        <div className="rounded-2xl p-8 text-white mb-8" style={{ backgroundImage: 'linear-gradient(to right, #4F46E5, #4338CA)' }}>
-          <h1 className="text-4xl font-bold mb-4">Your 30-Day Launch Plan</h1>
-          <h2 className="text-3xl mb-4">{playbook.businessName}</h2>
-          <p className="text-lg mb-6" style={{ color: '#E0E7FF' }}>{playbook.overview}</p>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6">
-            {timeCommitment && (
-              <div className="bg-white/10 rounded-lg p-4">
-                <div className="flex items-center mb-2">
-                  <Clock className="w-5 h-5 mr-2" />
-                  <span className="font-semibold">Weekly Time Commitment</span>
-                </div>
-                <p style={{ color: '#E0E7FF' }}>{timeCommitment}</p>
-              </div>
-            )}
-            {budget && (
-              <div className="bg-white/10 rounded-lg p-4">
-                <div className="flex items-center mb-2">
-                  <DollarSign className="w-5 h-5 mr-2" />
-                  <span className="font-semibold">Total Budget Needed</span>
-                </div>
-                <p style={{ color: '#E0E7FF' }}>{budget}</p>
-              </div>
-            )}
+        {emailSent && (
+          <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
+            <div className="flex items-center text-green-800">
+              <CheckCircle className="w-5 h-5 mr-2" />
+              <span className="font-semibold">Playbook sent to {userEmail}!</span>
+            </div>
           </div>
-        </div>
+        )}
 
-        <div className="space-y-8">
-          {playbook.weeks.map((week) => (
-            <div
-              key={week.week}
-              className="bg-white border-2 border-gray-200 rounded-2xl p-8 print:break-inside-avoid"
+        <div className="bg-white rounded-2xl shadow-lg p-8 lg:p-12 mb-8">
+          <div className="text-center mb-8">
+            <h1 className="text-4xl font-bold text-gray-900 mb-4">
+              Your 30-Day Launch Playbook
+            </h1>
+            <h2 className="text-2xl font-semibold text-indigo-600 mb-4">
+              {playbook.businessName}
+            </h2>
+            <p className="text-lg text-gray-600 max-w-3xl mx-auto">
+              {playbook.overview}
+            </p>
+          </div>
+
+          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
+            <button
+              onClick={handleDownload}
+              className="flex items-center justify-center px-6 py-3 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 transition-all shadow-md hover:shadow-lg"
             >
-              <div className="flex items-center mb-6 pb-4 border-b-2 border-gray-100">
-                <Calendar className="w-8 h-8 mr-3" style={{ color: '#4F46E5' }} />
-                <div>
-                  <h3 className="text-2xl font-bold text-gray-900">Week {week.week}</h3>
-                  <p className="text-xl font-semibold" style={{ color: '#4F46E5' }}>{week.title}</p>
-                </div>
-              </div>
+              <Download className="w-5 h-5 mr-2" />
+              Download Playbook
+            </button>
+            <button
+              onClick={() => setShowEmailPreview(true)}
+              disabled={isSendingEmail || !userEmail}
+              className="flex items-center justify-center px-6 py-3 border-2 border-indigo-600 text-indigo-600 font-semibold rounded-lg hover:bg-indigo-50 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <Mail className="w-5 h-5 mr-2" />
+              {isSendingEmail ? 'Sending...' : 'Email Me This Playbook'}
+            </button>
+          </div>
 
-              <div className="space-y-6">
-                <div className="mb-4">
-                  <p className="text-gray-700 text-sm">{week.focusArea}</p>
-                </div>
+          {showEmailPreview && (
+            <EmailPreviewModal
+              playbook={playbook}
+              userEmail={userEmail || ''}
+              onClose={() => setShowEmailPreview(false)}
+              onSend={handleSendEmail}
+              isSending={isSendingEmail}
+              optInDay1={optInDay1}
+              setOptInDay1={setOptInDay1}
+            />
+          )}
 
-                <div className="bg-green-50 rounded-lg p-4 mb-6">
-                  <h4 className="text-sm font-bold text-green-900 mb-1">Success Metric for Week {week.week}</h4>
-                  <p className="text-green-800">{week.successMetric}</p>
-                  <div className="flex items-center mt-2 text-sm text-green-700">
-                    <Clock className="w-3 h-3 mr-1" />
-                    Total time this week: {week.totalTime}
+          <div className="space-y-6">
+            {playbook.weeks.map((week) => (
+              <div
+                key={week.week}
+                className="border-2 border-gray-200 rounded-lg overflow-hidden transition-all hover:border-indigo-300"
+              >
+                <button
+                  onClick={() => toggleWeek(week.week)}
+                  className="w-full flex items-center justify-between p-6 bg-gray-50 hover:bg-gray-100 transition-colors"
+                >
+                  <div className="flex items-center space-x-4">
+                    <div className="flex-shrink-0 w-12 h-12 rounded-full bg-indigo-600 flex items-center justify-center text-white font-bold text-lg">
+                      {week.week}
+                    </div>
+                    <div className="text-left">
+                      <h3 className="text-xl font-bold text-gray-900">{week.title}</h3>
+                      <p className="text-sm text-gray-600 mt-1">{week.focusArea}</p>
+                    </div>
                   </div>
-                </div>
+                  {expandedWeeks.has(week.week) ? (
+                    <ChevronUp className="w-6 h-6 text-gray-600" />
+                  ) : (
+                    <ChevronDown className="w-6 h-6 text-gray-600" />
+                  )}
+                </button>
 
-                <div>
-                  <h4 className="text-lg font-bold text-gray-900 mb-3">Daily Tasks</h4>
-                  <div className="space-y-4">
-                    {week.dailyTasks.map((task, idx) => (
-                      <div key={idx} className="bg-gray-50 rounded-lg p-5">
-                        <div className="flex items-start mb-3">
-                          <div className="flex-shrink-0 bg-indigo-600 text-white font-bold rounded-full w-8 h-8 flex items-center justify-center mr-3 text-sm">
-                            {task.day}
-                          </div>
-                          <h5 className="text-lg font-bold text-gray-900 flex-1">{task.title}</h5>
+                {expandedWeeks.has(week.week) && (
+                  <div className="p-6 bg-white">
+                    <div className="mb-6 p-4 bg-indigo-50 rounded-lg">
+                      <div className="grid md:grid-cols-2 gap-4">
+                        <div>
+                          <p className="text-sm font-semibold text-gray-700 mb-1">Success Metric:</p>
+                          <p className="text-gray-900">{week.successMetric}</p>
                         </div>
-                        <p className="text-gray-700 text-sm leading-relaxed mb-3 ml-11">{task.description}</p>
-                        <div className="ml-11 flex flex-wrap gap-4 items-center">
-                          <div className="flex items-center text-sm text-gray-600">
-                            <Clock className="w-4 h-4 mr-1.5" style={{ color: '#4F46E5' }} />
-                            <span className="font-semibold">Time:</span>
-                            <span className="ml-1">{task.timeEstimate}</span>
-                          </div>
-                          {task.resources.length > 0 && (
-                            <div className="flex items-start text-sm text-gray-600">
-                              <span className="font-semibold mr-1.5">📋 Resources:</span>
-                              <span>{task.resources.join(", ")}</span>
-                            </div>
-                          )}
+                        <div>
+                          <p className="text-sm font-semibold text-gray-700 mb-1">Time Required:</p>
+                          <p className="text-gray-900">{week.totalTime}</p>
                         </div>
                       </div>
-                    ))}
+                    </div>
+
+                    <div className="space-y-4">
+                      {week.dailyTasks.map((task) => {
+                        const taskId = `${week.week}-${task.day}`;
+                        const isCompleted = completedTasks.has(taskId);
+
+                        return (
+                          <div
+                            key={task.day}
+                            className={`border-2 rounded-lg p-5 transition-all ${
+                              isCompleted
+                                ? 'border-green-300 bg-green-50'
+                                : 'border-gray-200 bg-white hover:border-indigo-200'
+                            }`}
+                          >
+                            <div className="flex items-start">
+                              <button
+                                onClick={() => toggleTask(week.week, task.day)}
+                                className={`flex-shrink-0 w-6 h-6 rounded border-2 mr-4 mt-1 flex items-center justify-center transition-all ${
+                                  isCompleted
+                                    ? 'bg-green-500 border-green-500'
+                                    : 'border-gray-300 hover:border-indigo-500'
+                                }`}
+                              >
+                                {isCompleted && <CheckCircle className="w-4 h-4 text-white" />}
+                              </button>
+
+                              <div className="flex-1">
+                                <div className="flex items-center justify-between mb-2">
+                                  <h4 className={`text-lg font-semibold ${isCompleted ? 'text-gray-500 line-through' : 'text-gray-900'}`}>
+                                    Day {task.day}: {task.title}
+                                  </h4>
+                                  <span className="text-sm text-gray-600 bg-gray-100 px-3 py-1 rounded-full">
+                                    {task.timeEstimate}
+                                  </span>
+                                </div>
+
+                                <p className={`mb-3 ${isCompleted ? 'text-gray-500' : 'text-gray-700'}`}>
+                                  {task.description}
+                                </p>
+
+                                {task.resources && task.resources.length > 0 && (
+                                  <div className="mt-3">
+                                    <p className="text-sm font-semibold text-gray-700 mb-2">Resources needed:</p>
+                                    <div className="flex flex-wrap gap-2">
+                                      {task.resources.map((resource, idx) => (
+                                        <span
+                                          key={idx}
+                                          className="text-sm bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full"
+                                        >
+                                          {resource}
+                                        </span>
+                                      ))}
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
                   </div>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        <div className="mt-12 space-y-8 print:hidden">
-          <div className="rounded-2xl p-8" style={{ backgroundColor: '#EEF2FF' }}>
-            <h3 className="text-2xl font-bold text-gray-900 mb-6 text-center">Get Your Playbook</h3>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <button
-                onClick={handleDownloadPDF}
-                disabled={pdfGenerating}
-                className="flex items-center justify-center px-8 py-4 text-white text-lg font-semibold rounded-lg transition-all shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
-                style={{ backgroundColor: '#4F46E5' }}
-                onMouseEnter={(e) => !e.currentTarget.disabled && (e.currentTarget.style.backgroundColor = '#4338CA')}
-                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#4F46E5'}
-              >
-                <Download className="w-5 h-5 mr-2" />
-                {pdfGenerating ? 'Generating PDF...' : 'Download as PDF'}
-              </button>
-              <button
-                onClick={handleEmailPlaybook}
-                disabled={emailSending || emailSent || !userEmail}
-                className="flex items-center justify-center px-8 py-4 border-2 text-lg font-semibold rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                style={{ borderColor: '#4F46E5', color: '#4F46E5' }}
-                onMouseEnter={(e) => !e.currentTarget.disabled && (e.currentTarget.style.backgroundColor = '#EEF2FF')}
-                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
-              >
-                <Mail className="w-5 h-5 mr-2" />
-                {emailSent ? 'Email Sent!' : emailSending ? 'Sending...' : 'Email Me This Playbook'}
-              </button>
-            </div>
-          </div>
-
-          {userEmail && !accountabilitySubmitted && (
-            <div className="bg-white border-2 border-gray-200 rounded-2xl p-8">
-              <h3 className="text-2xl font-bold text-gray-900 mb-4">Want help staying on track?</h3>
-              <div className="flex items-start mb-6">
-                <input
-                  type="checkbox"
-                  id="accountability-optin"
-                  checked={accountabilityOptIn}
-                  onChange={(e) => setAccountabilityOptIn(e.target.checked)}
-                  className="mt-1 mr-3 w-5 h-5 cursor-pointer"
-                  style={{ accentColor: '#4F46E5' }}
-                />
-                <label htmlFor="accountability-optin" className="text-gray-700 cursor-pointer">
-                  Email me a reminder to start Day 1 tomorrow (we'll check in once to help you get started)
-                </label>
-              </div>
-              <div className="flex flex-wrap gap-3">
-                {accountabilityOptIn && (
-                  <button
-                    onClick={handleAccountabilityOptIn}
-                    disabled={accountabilitySubmitting}
-                    className="px-6 py-3 text-white font-semibold rounded-lg transition-all shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
-                    style={{ backgroundColor: '#4F46E5' }}
-                    onMouseEnter={(e) => !e.currentTarget.disabled && (e.currentTarget.style.backgroundColor = '#4338CA')}
-                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#4F46E5'}
-                  >
-                    {accountabilitySubmitting ? 'Saving...' : 'Yes, remind me tomorrow'}
-                  </button>
                 )}
-                <button
-                  onClick={() => setShowEmailPreview(true)}
-                  className="flex items-center gap-2 px-6 py-3 border-2 font-semibold rounded-lg transition-all hover:bg-gray-50"
-                  style={{ borderColor: '#4F46E5', color: '#4F46E5' }}
-                >
-                  <Eye className="w-5 h-5" />
-                  Preview Day 1 Email
-                </button>
               </div>
-            </div>
-          )}
-
-          {accountabilitySubmitted && (
-            <div className="bg-green-50 border-2 border-green-200 rounded-2xl p-8">
-              <h3 className="text-xl font-bold text-green-900 mb-2">Reminder set!</h3>
-              <p className="text-green-800">We'll email you tomorrow to help you get started on Day 1.</p>
-            </div>
-          )}
+            ))}
+          </div>
         </div>
 
         <InterestCapture userEmail={userEmail} />
-
         <FeatureValidation userEmail={userEmail} />
       </div>
-
-      {showEmailPreview && playbook.weeks[0]?.dailyTasks[0] && (
-        <EmailPreviewModal
-          businessName={playbook.businessName}
-          taskTitle={playbook.weeks[0].dailyTasks[0].title}
-          taskDescription={playbook.weeks[0].dailyTasks[0].description}
-          timeEstimate={playbook.weeks[0].dailyTasks[0].timeEstimate}
-          userEmail={userEmail}
-          onClose={() => setShowEmailPreview(false)}
-        />
-      )}
     </div>
   );
 }
