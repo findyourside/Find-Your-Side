@@ -1,6 +1,6 @@
 {
   "engines": {
-    "node": "22.x"
+    "node": "20.x"
   },
   "name": "vite-react-typescript-starter",
   "private": true,
