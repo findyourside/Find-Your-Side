@@ -1,211 +1,163 @@
 import { useState } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { supabase } from './lib/supabase';
 import { analytics } from './lib/analytics';
 
+interface QuizData {
+  skills: string[];
+  skillsOther: string;
+  timeCommitment: string;
+  timeCommitmentOther: string;
+  interests: string[];
+  interestsOther: string;
+  goal: string;
+  goalOther: string;
+  experience: string;
+  email: string;
+}
+
 interface QuizProps {
-  onComplete: (answers: QuizAnswers, ideas: BusinessIdea[]) => void;
+  onComplete: (data: QuizData) => void;
   onBack: () => void;
 }
 
-interface QuizAnswers {
-  interests: string[];
-  skills: string[];
-  timeCommitment: string;
-  budget: string;
-  goals: string[];
-}
-
-interface BusinessIdea {
-  id: number;
-  name: string;
-  description: string;
-  whyMatch: string;
-  startupCost: string;
-  timeToRevenue: string;
-  difficulty: string;
-  category: string;
-}
-
-const questions = [
-  {
-    id: 'interests',
-    question: "What are you passionate about?",
-    description: "Select all that apply",
-    type: 'multiple',
-    options: [
-      'Technology & Innovation',
-      'Health & Wellness',
-      'Creative Arts & Design',
-      'Food & Cooking',
-      'Education & Teaching',
-      'Finance & Investing',
-      'Sports & Fitness',
-      'Travel & Adventure',
-      'Fashion & Beauty',
-      'Home & Garden',
-      'Entertainment & Media',
-      'Social Impact & Sustainability'
-    ]
-  },
-  {
-    id: 'skills',
-    question: "What skills do you have?",
-    description: "Select all that apply",
-    type: 'multiple',
-    options: [
-      'Writing & Communication',
-      'Design & Creativity',
-      'Technical & Programming',
-      'Sales & Marketing',
-      'Teaching & Training',
-      'Problem Solving',
-      'Project Management',
-      'Social Media',
-      'Data Analysis',
-      'Customer Service',
-      'Photography & Video',
-      'Public Speaking'
-    ]
-  },
-  {
-    id: 'timeCommitment',
-    question: "How much time can you commit weekly?",
-    description: "Choose one",
-    type: 'single',
-    options: [
-      '5-10 hours (Side hustle)',
-      '10-20 hours (Part-time)',
-      '20-40 hours (Full-time)',
-      '40+ hours (All in)'
-    ]
-  },
-  {
-    id: 'budget',
-    question: "What's your startup budget?",
-    description: "Choose one",
-    type: 'single',
-    options: [
-      'Under $500 (Bootstrap)',
-      '$500-$2,000 (Small investment)',
-      '$2,000-$10,000 (Moderate investment)',
-      '$10,000+ (Significant investment)'
-    ]
-  },
-  {
-    id: 'goals',
-    question: "What are your goals?",
-    description: "Select all that apply",
-    type: 'multiple',
-    options: [
-      'Generate extra income',
-      'Replace full-time job',
-      'Build wealth long-term',
-      'Help others/make impact',
-      'Work remotely/travel',
-      'Be my own boss',
-      'Learn new skills',
-      'Create passive income'
-    ]
-  }
-];
-
 export default function Quiz({ onComplete, onBack }: QuizProps) {
-  const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [answers, setAnswers] = useState<QuizAnswers>({
-    interests: [],
+  const [currentQuestion, setCurrentQuestion] = useState(1);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [formData, setFormData] = useState<QuizData>({
     skills: [],
+    skillsOther: '',
     timeCommitment: '',
-    budget: '',
-    goals: []
+    timeCommitmentOther: '',
+    interests: [],
+    interestsOther: '',
+    goal: '',
+    goalOther: '',
+    experience: '',
+    email: '',
   });
-  const [isGenerating, setIsGenerating] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
-  const question = questions[currentQuestion];
-  const progress = ((currentQuestion + 1) / questions.length) * 100;
+  const handleSkillToggle = (skill: string) => {
+    setFormData((prev) => {
+      const newSkills = prev.skills.includes(skill)
+        ? prev.skills.filter((s) => s !== skill)
+        : [...prev.skills, skill];
 
-  const handleAnswer = (option: string) => {
-    const questionId = question.id as keyof QuizAnswers;
-    
-    if (question.type === 'multiple') {
-      const currentAnswers = answers[questionId] as string[];
-      const newAnswers = currentAnswers.includes(option)
-        ? currentAnswers.filter(a => a !== option)
-        : [...currentAnswers, option];
-      
-      setAnswers({ ...answers, [questionId]: newAnswers });
+      return {
+        ...prev,
+        skills: newSkills,
+        skillsOther: skill === 'Other' && !newSkills.includes('Other') ? '' : prev.skillsOther,
+      };
+    });
+  };
+
+  const handleInterestToggle = (interest: string) => {
+    setFormData((prev) => {
+      const newInterests = prev.interests.includes(interest)
+        ? prev.interests.filter((i) => i !== interest)
+        : [...prev.interests, interest];
+
+      return {
+        ...prev,
+        interests: newInterests,
+        interestsOther: interest === 'Other' && !newInterests.includes('Other') ? '' : prev.interestsOther,
+      };
+    });
+  };
+
+  const handleNext = async () => {
+    if (currentQuestion < 6) {
+      setCurrentQuestion(currentQuestion + 1);
     } else {
-      setAnswers({ ...answers, [questionId]: option });
+      setIsSubmitting(true);
+      try {
+        const { error } = await supabase.from('quiz_responses').insert({
+          email: formData.email,
+          skills: formData.skills,
+          skills_other: formData.skillsOther || null,
+          time_commitment: formData.timeCommitment,
+          time_commitment_other: formData.timeCommitmentOther || null,
+          budget: null,
+          interests: formData.interests,
+          interests_other: formData.interestsOther || null,
+          goal: formData.goal,
+          goal_other: formData.goalOther || null,
+          experience: formData.experience,
+        });
+
+        if (error) {
+          console.error('Error saving quiz response:', error);
+        }
+
+        analytics.emailCaptured('quiz');
+      } catch (err) {
+        console.error('Error:', err);
+      } finally {
+        setIsSubmitting(false);
+        analytics.quizCompleted();
+        onComplete(formData);
+      }
+    }
+  };
+
+  const handlePrevious = () => {
+    if (currentQuestion > 1) {
+      setCurrentQuestion(currentQuestion - 1);
+    } else {
+      onBack();
     }
   };
 
   const canProceed = () => {
-    const questionId = question.id as keyof QuizAnswers;
-    const answer = answers[questionId];
-    
-    if (question.type === 'multiple') {
-      return Array.isArray(answer) && answer.length > 0;
-    }
-    return typeof answer === 'string' && answer.length > 0;
-  };
-
-  const handleNext = () => {
-    if (currentQuestion < questions.length - 1) {
-      setCurrentQuestion(currentQuestion + 1);
-      analytics.quizQuestionAnswered(currentQuestion + 1);
-    } else {
-      handleSubmit();
-    }
-  };
-
-  const handleBack = () => {
-    if (currentQuestion > 0) {
-      setCurrentQuestion(currentQuestion - 1);
-    }
-  };
-
-  const handleSubmit = async () => {
-    setIsGenerating(true);
-    setError(null);
-    analytics.quizCompleted();
-
-    console.log('Starting business ideas generation...');
-    console.log('Quiz data:', answers);
-
-    try {
-      console.log('Calling API: /api/generate-ideas');
-      
-      const response = await fetch('/api/generate-ideas', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(answers),
-      });
-
-      console.log('Response status:', response.status);
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error('API error:', errorData);
-        throw new Error(errorData.error || `Failed to generate ideas: ${response.statusText}`);
-      }
-
-      const data = await response.json();
-      console.log('Ideas received:', data);
-
-      if (!data.ideas || !Array.isArray(data.ideas)) {
-        throw new Error('Invalid response format from API');
-      }
-
-      analytics.ideasGenerated(data.ideas.length);
-      onComplete(answers, data.ideas);
-    } catch (err) {
-      console.error('Error generating ideas:', err);
-      setError(err instanceof Error ? err.message : 'Failed to generate business ideas');
-      setIsGenerating(false);
+    switch (currentQuestion) {
+      case 1:
+        if (formData.skills.length === 0) return false;
+        if (formData.skills.includes('Other') && formData.skillsOther.trim().length === 0) return false;
+        return true;
+      case 2:
+        if (formData.timeCommitment === '') return false;
+        if (formData.timeCommitment === 'Other' && formData.timeCommitmentOther.trim().length === 0) return false;
+        return true;
+      case 3:
+        if (formData.interests.length === 0) return false;
+        if (formData.interests.includes('Other') && formData.interestsOther.trim().length === 0) return false;
+        return true;
+      case 4:
+        if (formData.goal === '') return false;
+        if (formData.goal === 'Other' && formData.goalOther.trim().length === 0) return false;
+        return true;
+      case 5:
+        return formData.experience !== '';
+      case 6:
+        return formData.email !== '' && formData.email.includes('@');
+      default:
+        return false;
     }
   };
+
+  const skillOptions = [
+    'Writing',
+    'Design',
+    'Coding',
+    'Marketing',
+    'Sales',
+    'Teaching',
+    'Management',
+    'Consulting',
+    'Other',
+  ];
+
+  const interestOptions = [
+    'Fitness',
+    'Food',
+    'Tech',
+    'Education',
+    'Fashion',
+    'Finance',
+    'Health',
+    'Creative Arts',
+    'Other',
+  ];
 
   return (
     <div className="min-h-screen bg-white">
@@ -221,126 +173,289 @@ export default function Quiz({ onComplete, onBack }: QuizProps) {
         </div>
       </header>
 
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
-          <button
-            onClick={onBack}
-            className="flex items-center text-gray-600 hover:text-gray-900 transition-colors"
-          >
-            <ChevronLeft className="w-5 h-5 mr-1" />
-            Back to Home
-          </button>
+          <div className="flex justify-between items-center mb-2">
+            <p className="text-sm text-gray-600">Question {currentQuestion} of 6</p>
+            <p className="text-sm text-gray-600">{Math.round((currentQuestion / 6) * 100)}%</p>
+          </div>
+          <div className="w-full bg-gray-200 rounded-full h-2">
+            <div
+              className="h-2 rounded-full transition-all duration-300"
+              style={{ backgroundColor: '#4F46E5', width: `${(currentQuestion / 6) * 100}%` }}
+            ></div>
+          </div>
         </div>
 
         <div className="bg-white rounded-2xl shadow-lg p-8 lg:p-12">
-          <div className="mb-8">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-semibold text-indigo-600">
-                Question {currentQuestion + 1} of {questions.length}
-              </span>
-              <span className="text-sm text-gray-600">{Math.round(progress)}% Complete</span>
-            </div>
-            <div className="w-full bg-gray-200 rounded-full h-2">
-              <div
-                className="bg-indigo-600 h-2 rounded-full transition-all duration-300"
-                style={{ width: `${progress}%` }}
+          {currentQuestion === 1 && (
+            <fieldset>
+              <legend className="text-3xl font-bold text-gray-900 mb-2">
+                What skills do you have?
+              </legend>
+              <p className="text-gray-600 mb-6">Select all that apply</p>
+              <div className="space-y-3">
+                {skillOptions.map((skill) => (
+                  <div key={skill}>
+                    <label className="flex items-center p-4 border-2 border-gray-200 rounded-lg cursor-pointer transition-colors hover:border-[#4F46E5]">
+                      <input
+                        type="checkbox"
+                        checked={formData.skills.includes(skill)}
+                        onChange={() => handleSkillToggle(skill)}
+                        className="w-5 h-5 rounded"
+                        style={{ accentColor: '#4F46E5' }}
+                      />
+                      <span className="ml-3 text-lg text-gray-900">{skill}</span>
+                    </label>
+                    {skill === 'Other' && formData.skills.includes('Other') && (
+                      <div className="mt-2 ml-6">
+                        <textarea
+                          value={formData.skillsOther}
+                          onChange={(e) => {
+                            if (e.target.value.length <= 200) {
+                              setFormData({ ...formData, skillsOther: e.target.value });
+                            }
+                          }}
+                          placeholder="Describe your other skills..."
+                          rows={3}
+                          className="w-full px-4 py-3 text-base border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:border-transparent resize-none"
+                          style={{ '--tw-ring-color': '#4F46E5' } as React.CSSProperties}
+                        />
+                        <p className="mt-1 text-sm text-gray-500">
+                          {formData.skillsOther.length}/200 characters
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </fieldset>
+          )}
+
+          {currentQuestion === 2 && (
+            <fieldset>
+              <legend className="text-3xl font-bold text-gray-900 mb-6">
+                How much time can you dedicate weekly?
+              </legend>
+              <div className="space-y-3">
+                {[
+                  'Less than 5 hours/week (about 30-45 min/day)',
+                  '5 hours/week (about 1 hour/day)',
+                  '10 hours/week (1-2 hours/day or full weekend)',
+                  '15+ hours/week (2-3 hours daily)',
+                  'Other'
+                ].map((option) => (
+                  <label
+                    key={option}
+                    className="flex items-center p-4 border-2 border-gray-200 rounded-lg cursor-pointer transition-colors hover:border-[#4F46E5]"
+                  >
+                    <input
+                      type="radio"
+                      name="timeCommitment"
+                      checked={formData.timeCommitment === option}
+                      onChange={() => setFormData({
+                        ...formData,
+                        timeCommitment: option,
+                        timeCommitmentOther: option === 'Other' ? formData.timeCommitmentOther : ''
+                      })}
+                      className="w-5 h-5"
+                      style={{ accentColor: '#4F46E5' }}
+                    />
+                    <span className="ml-3 text-lg text-gray-900">{option}</span>
+                  </label>
+                ))}
+
+                {formData.timeCommitment === 'Other' && (
+                  <div className="mt-4 ml-8">
+                    <input
+                      type="text"
+                      placeholder="Please specify your availability (e.g., 20 hours but only on weekends)"
+                      value={formData.timeCommitmentOther}
+                      onChange={(e) => setFormData({
+                        ...formData,
+                        timeCommitmentOther: e.target.value.slice(0, 50)
+                      })}
+                      maxLength={50}
+                      className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-[#4F46E5] text-lg"
+                    />
+                    <p className="text-sm text-gray-500 mt-1">
+                      {formData.timeCommitmentOther.length}/50 characters
+                    </p>
+                  </div>
+                )}
+              </div>
+            </fieldset>
+          )}
+
+          {currentQuestion === 3 && (
+            <fieldset>
+              <legend className="text-3xl font-bold text-gray-900 mb-2">
+                What are you interested in?
+              </legend>
+              <p className="text-gray-600 mb-6">Select all that apply</p>
+              <div className="space-y-3">
+                {interestOptions.map((interest) => (
+                  <div key={interest}>
+                    <label className="flex items-center p-4 border-2 border-gray-200 rounded-lg cursor-pointer transition-colors hover:border-[#4F46E5]">
+                      <input
+                        type="checkbox"
+                        checked={formData.interests.includes(interest)}
+                        onChange={() => handleInterestToggle(interest)}
+                        className="w-5 h-5 rounded"
+                        style={{ accentColor: '#4F46E5' }}
+                      />
+                      <span className="ml-3 text-lg text-gray-900">{interest}</span>
+                    </label>
+                    {interest === 'Other' && formData.interests.includes('Other') && (
+                      <div className="mt-2 ml-6">
+                        <textarea
+                          value={formData.interestsOther}
+                          onChange={(e) => {
+                            if (e.target.value.length <= 200) {
+                              setFormData({ ...formData, interestsOther: e.target.value });
+                            }
+                          }}
+                          placeholder="Describe your other interests..."
+                          rows={3}
+                          className="w-full px-4 py-3 text-base border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:border-transparent resize-none"
+                          style={{ '--tw-ring-color': '#4F46E5' } as React.CSSProperties}
+                        />
+                        <p className="mt-1 text-sm text-gray-500">
+                          {formData.interestsOther.length}/200 characters
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </fieldset>
+          )}
+
+          {currentQuestion === 4 && (
+            <fieldset>
+              <legend className="text-3xl font-bold text-gray-900 mb-6">
+                What's your main goal?
+              </legend>
+              <div className="space-y-3">
+                {[
+                  'Generate extra income',
+                  'Eventually replace my full-time job',
+                  'Creative outlet (income is secondary)',
+                  'Learn new skills and test ideas',
+                  'Other',
+                ].map((option) => (
+                  <label
+                    key={option}
+                    className="flex items-center p-4 border-2 border-gray-200 rounded-lg cursor-pointer transition-colors hover:border-[#4F46E5]"
+                  >
+                    <input
+                      type="radio"
+                      name="goal"
+                      checked={formData.goal === option}
+                      onChange={() => setFormData({
+                        ...formData,
+                        goal: option,
+                        goalOther: option === 'Other' ? formData.goalOther : ''
+                      })}
+                      className="w-5 h-5"
+                      style={{ accentColor: '#4F46E5' }}
+                    />
+                    <span className="ml-3 text-lg text-gray-900">{option}</span>
+                  </label>
+                ))}
+
+                {formData.goal === 'Other' && (
+                  <div className="mt-4 ml-8">
+                    <input
+                      type="text"
+                      placeholder="Describe your goal..."
+                      value={formData.goalOther}
+                      onChange={(e) => setFormData({
+                        ...formData,
+                        goalOther: e.target.value.slice(0, 100)
+                      })}
+                      maxLength={100}
+                      className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-[#4F46E5] text-lg"
+                    />
+                    <p className="text-sm text-gray-500 mt-1">
+                      {formData.goalOther.length}/100 characters
+                    </p>
+                  </div>
+                )}
+              </div>
+            </fieldset>
+          )}
+
+          {currentQuestion === 5 && (
+            <fieldset>
+              <legend className="text-3xl font-bold text-gray-900 mb-6">
+                What's your entrepreneurial experience?
+              </legend>
+              <div className="space-y-3">
+                {[
+                  "I've never started a business before",
+                  "I've tried a side business but stopped",
+                  "I currently run a side business",
+                  "I've successfully exited a business",
+                ].map((option) => (
+                  <label
+                    key={option}
+                    className="flex items-center p-4 border-2 border-gray-200 rounded-lg cursor-pointer transition-colors hover:border-[#4F46E5]"
+                  >
+                    <input
+                      type="radio"
+                      name="experience"
+                      checked={formData.experience === option}
+                      onChange={() => setFormData({ ...formData, experience: option })}
+                      className="w-5 h-5"
+                      style={{ accentColor: '#4F46E5' }}
+                    />
+                    <span className="ml-3 text-lg text-gray-900">{option}</span>
+                  </label>
+                ))}
+              </div>
+            </fieldset>
+          )}
+
+          {currentQuestion === 6 && (
+            <div>
+              <label htmlFor="email" className="block text-3xl font-bold text-gray-900 mb-6">
+                Email address
+              </label>
+              <input
+                type="email"
+                id="email"
+                placeholder="your.email@example.com"
+                value={formData.email}
+                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                required
+                className="w-full px-4 py-4 text-lg border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:border-transparent"
+                style={{ '--tw-ring-color': '#4F46E5' } as React.CSSProperties}
               />
             </div>
+          )}
+
+
+          <div className="flex gap-4 mt-8">
+            <button
+              onClick={handlePrevious}
+              className="flex items-center justify-center px-6 py-3 border-2 border-gray-300 text-gray-700 text-lg font-semibold rounded-lg hover:bg-gray-50 transition-all"
+            >
+              <ChevronLeft className="w-5 h-5 mr-1" />
+              Back
+            </button>
+            <button
+              onClick={handleNext}
+              disabled={!canProceed() || isSubmitting}
+              className="flex-1 flex items-center justify-center px-6 py-3 text-white text-lg font-semibold rounded-lg transition-all disabled:bg-gray-300 disabled:cursor-not-allowed shadow-lg hover:shadow-xl"
+              style={{ backgroundColor: '#4F46E5' }}
+              onMouseEnter={(e) => !e.currentTarget.disabled && (e.currentTarget.style.backgroundColor = '#4338CA')}
+              onMouseLeave={(e) => !e.currentTarget.disabled && (e.currentTarget.style.backgroundColor = '#4F46E5')}
+            >
+              {isSubmitting ? 'Submitting...' : currentQuestion === 6 ? 'Generate My Ideas' : 'Next'}
+              {currentQuestion < 6 && !isSubmitting && <ChevronRight className="w-5 h-5 ml-1" />}
+            </button>
           </div>
-
-          {error && (
-            <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
-              <p className="text-red-800 font-semibold">Error</p>
-              <p className="text-red-600 text-sm mt-1">{error}</p>
-              <button
-                onClick={handleSubmit}
-                className="mt-3 text-sm text-red-600 hover:text-red-800 underline"
-              >
-                Try Again
-              </button>
-            </div>
-          )}
-
-          {isGenerating ? (
-            <div className="text-center py-12">
-              <div className="inline-block animate-spin rounded-full h-16 w-16 border-4 border-indigo-600 border-t-transparent mb-4"></div>
-              <h3 className="text-2xl font-bold text-gray-900 mb-2">
-                Generating Your Business Ideas...
-              </h3>
-              <p className="text-gray-600">
-                Our AI is analyzing your profile and creating personalized recommendations
-              </p>
-            </div>
-          ) : (
-            <>
-              <div className="mb-8">
-                <h2 className="text-3xl font-bold text-gray-900 mb-3">
-                  {question.question}
-                </h2>
-                <p className="text-gray-600">{question.description}</p>
-              </div>
-
-              <div className="space-y-3 mb-8">
-                {question.options.map((option) => {
-                  const questionId = question.id as keyof QuizAnswers;
-                  const isSelected = question.type === 'multiple'
-                    ? (answers[questionId] as string[]).includes(option)
-                    : answers[questionId] === option;
-
-                  return (
-                    <button
-                      key={option}
-                      onClick={() => handleAnswer(option)}
-                      className={`w-full text-left px-6 py-4 rounded-lg border-2 transition-all ${
-                        isSelected
-                          ? 'border-indigo-600 bg-indigo-50 text-indigo-900'
-                          : 'border-gray-200 hover:border-indigo-300 text-gray-700'
-                      }`}
-                    >
-                      <div className="flex items-center">
-                        <div
-                          className={`w-5 h-5 rounded border-2 mr-3 flex items-center justify-center ${
-                            isSelected ? 'bg-indigo-600 border-indigo-600' : 'border-gray-300'
-                          }`}
-                        >
-                          {isSelected && (
-                            <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
-                              <path
-                                fillRule="evenodd"
-                                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                                clipRule="evenodd"
-                              />
-                            </svg>
-                          )}
-                        </div>
-                        <span className="font-medium">{option}</span>
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
-
-              <div className="flex justify-between items-center">
-                <button
-                  onClick={handleBack}
-                  disabled={currentQuestion === 0}
-                  className="flex items-center px-6 py-3 text-gray-700 font-semibold rounded-lg hover:bg-gray-100 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  <ChevronLeft className="w-5 h-5 mr-1" />
-                  Previous
-                </button>
-
-                <button
-                  onClick={handleNext}
-                  disabled={!canProceed()}
-                  className="flex items-center px-8 py-3 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 transition-all shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {currentQuestion === questions.length - 1 ? 'Generate Ideas' : 'Next'}
-                  <ChevronRight className="w-5 h-5 ml-1" />
-                </button>
-              </div>
-            </>
-          )}
         </div>
       </div>
     </div>
