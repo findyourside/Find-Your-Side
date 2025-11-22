@@ -10,10 +10,31 @@ export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
   if (!ANTHROPIC_API_KEY) return res.status(500).json({ error: 'Missing API key' });
 
-  const { businessIdea, timeCommitment, budget, skillsExperience } = req.body;
+  // Extract data from different sources
+  const ideaFormData = req.body.ideaFormData;
+  const idea = req.body.idea;
+
+  // Get the business idea text
+  const businessIdea = 
+    req.body.businessIdea ||
+    ideaFormData?.businessIdea ||
+    idea?.name;
+
+  // Get time commitment
+  const timeCommitment = 
+    req.body.timeCommitment ||
+    ideaFormData?.timeCommitment;
+
+  const budget = req.body.budget || ideaFormData?.budget;
+  const skillsExperience = req.body.skillsExperience || ideaFormData?.skillsExperience;
 
   if (!businessIdea || !timeCommitment) {
-    return res.status(400).json({ error: 'Missing required fields' });
+    return res.status(400).json({ 
+      error: 'Missing required fields',
+      received: Object.keys(req.body),
+      businessIdea,
+      timeCommitment
+    });
   }
 
   const prompt = `Create a 30-day launch playbook for: ${businessIdea}. Time: ${timeCommitment}. ${budget ? `Budget: ${budget}.` : ''} ${skillsExperience ? `Skills: ${skillsExperience}.` : ''} Return ONLY valid JSON: {"businessName":"","overview":"","weeks":[{"week":1,"title":"","focusArea":"","successMetric":"","totalTime":"","dailyTasks":[{"day":1,"title":"","description":"","timeEstimate":"","resources":[]}]}]}`;
