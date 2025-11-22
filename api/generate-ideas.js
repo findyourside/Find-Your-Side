@@ -19,11 +19,11 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: 'Server configuration error' });
   }
 
-  const answers = req.body;
+const answers = req.body.quizData || req.body;
 
-  if (!answers.interests || !answers.skills) {
-    return res.status(400).json({ error: 'Missing required fields' });
-  }
+if (!answers.interests || !answers.skills) {
+  return res.status(400).json({ error: 'Missing required fields', received: Object.keys(req.body) });
+}
 
   const prompt = `Generate 10 business ideas based on: Interests: ${answers.interests.join(', ')}, Skills: ${answers.skills.join(', ')}, Time: ${answers.timeCommitment}, Budget: ${answers.budget}, Goals: ${answers.goals.join(', ')}. Return ONLY valid JSON: {"ideas":[{"id":1,"name":"","description":"","whyMatch":"","startupCost":"","timeToRevenue":"","difficulty":"","category":""}]}`;
 
