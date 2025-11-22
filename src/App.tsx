@@ -100,15 +100,14 @@ function App() {
     console.log('Quiz data:', data);
 
     try {
-      const url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-business-ideas`;
+      const url = '/api/generate-ideas';
       console.log('Calling API:', url);
 
       const response = await fetch(url, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
-          'Content-Type': 'application/json',
-        },
+  'Content-Type': 'application/json',
+},
         body: JSON.stringify({ quizData: data }),
       });
 
@@ -171,15 +170,14 @@ function App() {
     console.log('Idea form data:', data);
 
     try {
-      const url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-playbook`;
+    const url = '/api/generate-playbook';
       console.log('Calling API:', url);
 
       const response = await fetch(url, {
         method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
-          'Content-Type': 'application/json',
-        },
+       headers: {
+  'Content-Type': 'application/json',
+},
         body: JSON.stringify({
           ideaFormData: data,
           userEmail: data.email,
@@ -251,15 +249,14 @@ function App() {
     console.log('Quiz data:', quizData);
 
     try {
-      const url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-playbook`;
+      const url = '/api/generate-playbook';
       console.log('Calling API:', url);
 
       const response = await fetch(url, {
         method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
-          'Content-Type': 'application/json',
-        },
+      headers: {
+  'Content-Type': 'application/json',
+},
         body: JSON.stringify({
           idea,
           timeCommitment: quizData?.timeCommitment,
