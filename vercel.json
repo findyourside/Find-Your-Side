@@ -1,7 +1,10 @@
 {
   "functions": {
-    "api/*.js": {
+    "api/generate-playbook.js": {
       "maxDuration": 60
+    },
+    "api/generate-ideas.js": {
+      "maxDuration": 30
     }
   }
 }
