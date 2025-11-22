@@ -6,33 +6,27 @@ export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
   res.setHeader('Access-Control-Allow-Headers', 'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version');
 
-  if (req.method === 'OPTIONS') {
-    return res.status(200).end();
-  }
+  if (req.method === 'OPTIONS') return res.status(200).end();
+  if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
+  if (!ANTHROPIC_API_KEY) return res.status(500).json({ error: 'Missing API key' });
 
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
-  }
-
-  if (!ANTHROPIC_API_KEY) {
-    console.error('Missing ANTHROPIC_API_KEY');
-    return res.status(500).json({ error: 'Server configuration error' });
-  }
-
-  // Handle both wrapped and unwrapped data
   const answers = req.body.quizData || req.body;
 
-  if (!answers.interests || !answers.skills) {
-    return res.status(400).json({ 
-      error: 'Missing required fields',
-      received: Object.keys(req.body),
-      hasQuizData: !!req.body.quizData,
-      interests: answers.interests,
-      skills: answers.skills
-    });
+  if (!answers.interests?.length || !answers.skills?.length) {
+    return res.status(400).json({ error: 'Missing interests or skills' });
   }
 
-  const prompt = `Generate 10 business ideas based on: Interests: ${answers.interests.join(', ')}, Skills: ${answers.skills.join(', ')}, Time: ${answers.timeCommitment}, Budget: ${answers.budget}, Goals: ${answers.goals ? answers.goals.join(', ') : answers.goal}. Return ONLY valid JSON: {"ideas":[{"id":1,"name":"","description":"","whyMatch":"","startupCost":"","timeToRevenue":"","difficulty":"","category":""}]}`;
+  const prompt = `Generate exactly 10 diverse business ideas based on:
+Interests: ${answers.interests.join(', ')}
+Skills: ${answers.skills.join(', ')}
+Time available: ${answers.timeCommitment}
+Budget: ${answers.budget}
+Goals: ${answers.goals?.join(', ') || 'various'}
+
+For EACH idea, provide: specific business name, 2-3 sentence description explaining what the business does, why it matches their profile, realistic startup cost range, realistic timeline to first revenue, difficulty level (Beginner/Intermediate/Advanced), and business category.
+
+Return ONLY valid JSON with no markdown:
+{"ideas":[{"id":1,"name":"Business Name","description":"What it does","whyMatch":"Why it fits","startupCost":"$X-$Y","timeToRevenue":"X weeks","difficulty":"Beginner","category":"Service"}]}`;
 
   try {
     const response = await fetch('https://api.anthropic.com/v1/messages', {
@@ -51,22 +45,28 @@ export default async function handler(req, res) {
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('Anthropic API error:', errorText);
       return res.status(response.status).json({ error: 'API error', details: errorText.substring(0, 200) });
     }
 
     const data = await response.json();
     let ideasText = data.content[0].text.trim();
     
-    if (ideasText.startsWith('```json')) {
-      ideasText = ideasText.replace(/^```json\s*\n/, '').replace(/\n```$/, '');
+    ideasText = ideasText.replace(/^```json\n?/, '').replace(/\n?```$/, '').trim();
+
+    let ideas;
+    try {
+      ideas = JSON.parse(ideasText);
+    } catch (e) {
+      return res.status(500).json({ error: 'Failed to parse AI response', sample: ideasText.substring(0, 200) });
     }
 
-    const ideas = JSON.parse(ideasText);
+    if (!ideas.ideas?.length) {
+      return res.status(500).json({ error: 'No ideas in response' });
+    }
+
     return res.status(200).json(ideas);
 
   } catch (error) {
-    console.error('Error:', error);
-    return res.status(500).json({ error: 'Internal error', details: error.message });
+    return res.status(500).json({ error: 'Internal error', message: error.message });
   }
 }
