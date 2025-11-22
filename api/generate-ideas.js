@@ -1,16 +1,6 @@
-import type { VercelRequest, VercelResponse } from '@vercel/node';
-
 const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
 
-interface QuizAnswers {
-  interests: string[];
-  skills: string[];
-  timeCommitment: string;
-  budget: string;
-  goals: string[];
-}
-
-export default async function handler(req: VercelRequest, res: VercelResponse) {
+export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Credentials', 'true');
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
@@ -29,7 +19,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(500).json({ error: 'Server configuration error' });
   }
 
-  const answers: QuizAnswers = req.body;
+  const answers = req.body;
 
   if (!answers.interests || !answers.skills) {
     return res.status(400).json({ error: 'Missing required fields' });
@@ -70,6 +60,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   } catch (error) {
     console.error('Error:', error);
-    return res.status(500).json({ error: 'Internal error', details: error instanceof Error ? error.message : 'Unknown' });
+    return res.status(500).json({ error: 'Internal error', details: error.message });
   }
 }
