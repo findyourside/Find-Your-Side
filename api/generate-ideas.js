@@ -19,13 +19,20 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: 'Server configuration error' });
   }
 
-const answers = req.body.quizData || req.body;
+  // Handle both wrapped and unwrapped data
+  const answers = req.body.quizData || req.body;
 
-if (!answers.interests || !answers.skills) {
-  return res.status(400).json({ error: 'Missing required fields', received: Object.keys(req.body) });
-}
+  if (!answers.interests || !answers.skills) {
+    return res.status(400).json({ 
+      error: 'Missing required fields',
+      received: Object.keys(req.body),
+      hasQuizData: !!req.body.quizData,
+      interests: answers.interests,
+      skills: answers.skills
+    });
+  }
 
-  const prompt = `Generate 10 business ideas based on: Interests: ${answers.interests.join(', ')}, Skills: ${answers.skills.join(', ')}, Time: ${answers.timeCommitment}, Budget: ${answers.budget}, Goals: ${answers.goals.join(', ')}. Return ONLY valid JSON: {"ideas":[{"id":1,"name":"","description":"","whyMatch":"","startupCost":"","timeToRevenue":"","difficulty":"","category":""}]}`;
+  const prompt = `Generate 10 business ideas based on: Interests: ${answers.interests.join(', ')}, Skills: ${answers.skills.join(', ')}, Time: ${answers.timeCommitment}, Budget: ${answers.budget}, Goals: ${answers.goals ? answers.goals.join(', ') : answers.goal}. Return ONLY valid JSON: {"ideas":[{"id":1,"name":"","description":"","whyMatch":"","startupCost":"","timeToRevenue":"","difficulty":"","category":""}]}`;
 
   try {
     const response = await fetch('https://api.anthropic.com/v1/messages', {
