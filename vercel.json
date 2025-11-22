@@ -2,11 +2,7 @@
   "functions": {
     "api/*.js": {
       "memory": 1024,
-      "maxDuration": 30
+      "maxDuration": 60
     }
-  },
-  "routes": [
-    { "src": "/api/generate-ideas", "dest": "/api/generate-ideas.js" },
-    { "src": "/api/generate-playbook", "dest": "/api/generate-playbook.js" }
-  ]
+  }
 }
