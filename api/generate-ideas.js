@@ -37,9 +37,9 @@ export default async function handler(req, res) {
 - Experience level: ${answers.experience || 'beginner'}
 
 Return ONLY valid JSON (no markdown, no code blocks):
-{"ideas":[{"id":1,"name":"Specific business name","whyMatch":"One sentence explaining why this fits their interests and skills","timeToRevenue":"X weeks or X months","firstStep":"One specific action to validate this idea"}]}
+{"ideas":[{"id":1,"name":"Specific business name","whyItFits":"One sentence explaining why this fits their interests and skills","timeRequired":"X weeks or X months","firstStep":"One specific action to validate this idea"}]}
 
-Create 10 unique ideas personalized to their profile. Each idea must have all 4 fields: id, name, whyMatch, timeToRevenue, firstStep.`;
+Create 10 unique ideas personalized to their profile. Each idea must have all 4 fields: id, name, whyItFits, timeRequired, firstStep.`;
 
   try {
     const response = await fetch('https://api.anthropic.com/v1/messages', {
