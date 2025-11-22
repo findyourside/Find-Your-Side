@@ -265,7 +265,7 @@ Now create the playbook for "${businessIdea}" with 4 weeks, 5 tasks per week (20
       },
       body: JSON.stringify({
        model: 'claude-sonnet-4-20250514',
-        max_tokens: 4000,
+     max_tokens: 3000,
         messages: [{ role: 'user', content: prompt }],
       }),
       signal: controller.signal,
