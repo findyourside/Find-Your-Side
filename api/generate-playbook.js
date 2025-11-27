@@ -17,7 +17,6 @@ export default async function handler(req, res) {
   const ideaFormData = req.body.ideaFormData;
   const idea = req.body.idea;
 
-  // Build businessIdea from form data
   let businessIdea;
   if (ideaFormData) {
     const businessType = ideaFormData.businessType === 'Other' 
@@ -40,18 +39,18 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'Missing business idea' });
   }
 
-  const prompt = `Create a 30-day launch playbook for "${businessIdea}".
+  const prompt = `Create a 4-week launch playbook for "${businessIdea}".
 Time commitment: ${timeCommitment}
 ${budget ? `Budget: ${budget}` : ''}
 ${skillsExperience ? `Skills/Experience: ${skillsExperience}` : ''}
 
-Generate EXACTLY 3 weeks with 3 daily tasks per week (9 tasks total, days 1-9).
-Each task needs: day number, title, detailed description, time estimate, and 2-3 resources.
+Generate EXACTLY 4 weeks with 5 daily tasks per week (20 tasks total, days 1-20).
+Each task needs: day number, title, detailed description (under 100 words), time estimate, and 2-3 resources.
 
 Return ONLY valid JSON (no markdown):
 {
   "businessName": "Creative name for the business",
-  "overview": "2-3 sentence overview of the plan",
+  "overview": "A 4-week action plan to launch ${businessIdea}",
   "weeks": [
     {
       "week": 1,
@@ -79,7 +78,7 @@ Return ONLY valid JSON (no markdown):
       },
       body: JSON.stringify({
         model: 'claude-sonnet-4-20250514',
-        max_tokens: 2500,
+        max_tokens: 3500,
         messages: [{ role: 'user', content: prompt }],
       }),
       signal: controller.signal,
@@ -96,7 +95,6 @@ Return ONLY valid JSON (no markdown):
     const data = await response.json();
     let text = data.content[0].text.trim();
     
-    // Remove markdown
     text = text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
 
     let playbook;
@@ -112,10 +110,35 @@ Return ONLY valid JSON (no markdown):
       return res.status(500).json({ error: 'Invalid playbook structure' });
     }
 
-    return res.status(200).json({ playbook });
+    // Generate PDF
+    const pdfData = generatePDFData(playbook);
+
+    return res.status(200).json({ playbook, pdfData });
 
   } catch (error) {
     console.error('Error:', error.message);
     return res.status(500).json({ error: 'Internal error', message: error.message });
   }
+}
+
+function generatePDFData(playbook) {
+  // Simple text-based PDF data for browser to convert
+  let content = `${playbook.businessName}\n\n`;
+  content += `${playbook.overview}\n\n`;
+  
+  playbook.weeks.forEach(week => {
+    content += `\nWEEK ${week.week}: ${week.title}\n`;
+    content += `Focus: ${week.focusArea}\n`;
+    content += `Success Metric: ${week.successMetric}\n`;
+    content += `Total Time: ${week.totalTime}\n\n`;
+    
+    week.dailyTasks.forEach(task => {
+      content += `Day ${task.day}: ${task.title}\n`;
+      content += `${task.description}\n`;
+      content += `Time: ${task.timeEstimate}\n`;
+      content += `Resources: ${task.resources.join(', ')}\n\n`;
+    });
+  });
+  
+  return content;
 }
