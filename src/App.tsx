@@ -91,13 +91,80 @@ function App() {
     setCurrentView('ideaForm');
   };
 
-  const handleQuizComplete = async (data: QuizData) => {
-    setQuizData(data);
-    setCurrentView('generatingIdeas');
-    setError(null);
+const handleQuizComplete = async (data: QuizData) => {
+  setQuizData(data);
+  setCurrentView('generatingIdeas');
+  setError(null);
 
-    console.log('Starting business ideas generation...');
-    console.log('Quiz data:', data);
+  console.log('Starting business ideas generation...');
+  console.log('Quiz data:', data);
+
+  const startTime = Date.now();
+
+  try {
+    const url = '/api/generate-ideas';
+    console.log('Calling API:', url);
+
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ quizData: data }),
+    });
+
+    const elapsedTime = Date.now() - startTime;
+    if (elapsedTime > 30000) {
+      console.log('High traffic - request was queued');
+    }
+
+    console.log('Response status:', response.status);
+
+    const result = await response.json();
+    console.log('API Response:', result);
+
+    if (!response.ok) {
+      if (result.blocked && result.reason === 'monthly_limit') {
+        analytics.monthlyCapReached();
+        setWaitlistReason('monthly_limit');
+        setShowWaitlist(true);
+        setCurrentView('home');
+        return;
+      }
+      if (result.blocked && result.reason === 'idea_limit') {
+        analytics.ideaLimitReached();
+        setShowIdeaLimitModal(true);
+        setCurrentView('home');
+        return;
+      }
+      console.error('API Error:', result);
+      throw new Error(result.error || `API returned status ${response.status}`);
+    }
+
+    if (!result.ideas || !Array.isArray(result.ideas)) {
+      console.error('Invalid response format:', result);
+      throw new Error('Invalid response format from API');
+    }
+
+    setBusinessIdeas(result.ideas);
+    analytics.ideasGenerated(result.ideas.length);
+
+    const newIdeaSetsRemaining = ideaSetsRemaining - 1;
+    setIdeaSetsRemaining(newIdeaSetsRemaining);
+
+    if (newIdeaSetsRemaining === 1) {
+      setSuccessMessage('✅ Ideas generated! You have 1 more idea set remaining.');
+    } else if (newIdeaSetsRemaining === 0) {
+      setSuccessMessage('✅ This is your final idea set. Select your best idea for a playbook!');
+    }
+
+    setTimeout(() => setSuccessMessage(null), 5000);
+    setCurrentView('showingIdeas');
+  } catch (err) {
+    console.error('Error generating ideas:', err);
+    const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
+    setError(`Failed to generate business ideas: ${errorMessage}`);
+    setCurrentView('home');
+  }
+};
 
     try {
       const url = '/api/generate-ideas';
