@@ -614,7 +614,6 @@ function App() {
           </div>
         </div>
       </section>
-</section>
 
       {/* Sample Playbook Preview */}
       <section className="py-20 bg-gray-50">
