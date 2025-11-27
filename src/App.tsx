@@ -449,7 +449,7 @@ function App() {
                   p { font-size: 18px !important; }
                 }
               `}</style>
-              Get a personalized 30-day launch plan - whether you're exploring ideas or ready to execute.
+              Get a personalized 4-week launch plan - whether you're exploring ideas or ready to execute.
             </p>
 
             <div className="flex flex-col items-center gap-2">
@@ -553,7 +553,7 @@ function App() {
                   </div>
                   <div className="ml-4">
                     <h4 className="font-semibold text-gray-900 mb-1">Get your launch playbook</h4>
-                    <p className="text-gray-600">Receive your personalized 30-day plan</p>
+                    <p className="text-gray-600">Receive your personalized 4-week plan</p>
                   </div>
                 </div>
               </div>
@@ -596,7 +596,7 @@ function App() {
                   </div>
                   <div className="ml-4">
                     <h4 className="font-semibold text-gray-900 mb-1">Get your launch playbook</h4>
-                    <p className="text-gray-600">Receive your personalized 30-day action plan</p>
+                    <p className="text-gray-600">Receive your personalized 4-week action plan</p>
                   </div>
                 </div>
 
@@ -660,7 +660,7 @@ function App() {
             What You Get
           </h2>
           <p className="text-xl text-gray-600 text-center mb-16">
-            Everything you need to launch in 30 days
+            Everything you need to launch in 4 weeks
           </p>
 
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -825,7 +825,7 @@ function GeneratingPlaybookView() {
       <div className="text-center px-4">
         <div className="animate-spin rounded-full h-16 w-16 border-b-2 mx-auto mb-4" style={{ borderColor: '#4F46E5' }}></div>
         <h1 className="text-4xl font-bold text-gray-900 mb-4">Creating Your Playbook...</h1>
-        <p className="text-xl text-gray-600">Building your personalized 30-day launch plan.</p>
+        <p className="text-xl text-gray-600">Building your personalized 4-week launch plan.</p>
         {showWaitMessage && (
           <p className="text-sm text-amber-600 mt-4 bg-amber-50 border border-amber-200 rounded-lg px-4 py-2">
             ⏳ High traffic detected. This is taking longer than usual. Please wait...
