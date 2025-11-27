@@ -626,29 +626,67 @@ function App() {
           </p>
           
           <div className="bg-white rounded-2xl shadow-lg p-8 max-w-4xl mx-auto">
-            <h3 className="text-2xl font-bold text-gray-900 mb-4">Sample: Social Media Management Business</h3>
-            <p className="text-gray-600 mb-6">A 4-week action plan to launch your social media management service</p>
-            
-            <div className="space-y-4">
-              <div className="border-l-4 border-indigo-600 pl-4">
-                <h4 className="font-semibold text-gray-900">Week 1: Foundation & Validation</h4>
-                <p className="text-sm text-gray-600">Days 1-5: Market research, ideal client profile, outreach strategy</p>
-              </div>
-              <div className="border-l-4 border-indigo-600 pl-4">
-                <h4 className="font-semibold text-gray-900">Week 2: Package & Pricing</h4>
-                <p className="text-sm text-gray-600">Days 6-10: Service packages, pricing page, client onboarding</p>
-              </div>
-              <div className="border-l-4 border-indigo-600 pl-4">
-                <h4 className="font-semibold text-gray-900">Week 3: Launch & Outreach</h4>
-                <p className="text-sm text-gray-600">Days 11-15: Portfolio, proposals, network expansion</p>
-              </div>
-              <div className="border-l-4 border-indigo-600 pl-4">
-                <h4 className="font-semibold text-gray-900">Week 4: Close & Optimize</h4>
-                <p className="text-sm text-gray-600">Days 16-20: First customer, delivery setup, launch</p>
-              </div>
-            </div>
-          </div>
+  <h3 className="text-2xl font-bold text-gray-900 mb-4">Sample: Custom Furniture Refinishing Business</h3>
+  <p className="text-gray-600 mb-6">A 4-week action plan to launch your furniture refinishing service</p>
+  
+  <div className="space-y-6">
+    <div className="border-2 border-indigo-200 rounded-lg p-6">
+      <h4 className="text-lg font-bold text-gray-900 mb-4">Week 1: Foundation & Skills</h4>
+      <div className="space-y-3">
+        <div className="pl-4 border-l-2 border-indigo-400">
+          <p className="font-semibold text-gray-900">Day 1: Learn restoration techniques</p>
+          <p className="text-sm text-gray-600">Watch tutorials on furniture stripping, sanding, and refinishing. Practice on a test piece.</p>
         </div>
+        <div className="pl-4 border-l-2 border-indigo-400">
+          <p className="font-semibold text-gray-900">Day 2: Source your first pieces</p>
+          <p className="text-sm text-gray-600">Visit thrift stores and garage sales. Find 3 pieces to refinish for your portfolio.</p>
+        </div>
+        <div className="pl-4 border-l-2 border-indigo-400">
+          <p className="font-semibold text-gray-900">Day 3: Buy tools and supplies</p>
+          <p className="text-sm text-gray-600">Purchase sandpaper, stain, polyurethane, brushes. Budget: $150-200.</p>
+        </div>
+        <div className="pl-4 border-l-2 border-indigo-400">
+          <p className="font-semibold text-gray-900">Day 4: Complete first refinish</p>
+          <p className="text-sm text-gray-600">Refinish your first piece start to finish. Document with before/after photos.</p>
+        </div>
+        <div className="pl-4 border-l-2 border-indigo-400">
+          <p className="font-semibold text-gray-900">Day 5: Set up social media</p>
+          <p className="text-sm text-gray-600">Create Instagram and Facebook accounts. Post your first before/after transformation.</p>
+        </div>
+      </div>
+    </div>
+
+    <div className="border-2 border-indigo-200 rounded-lg p-6">
+      <h4 className="text-lg font-bold text-gray-900 mb-4">Week 2: Build Portfolio & Pricing</h4>
+      <div className="space-y-3">
+        <div className="pl-4 border-l-2 border-indigo-400">
+          <p className="font-semibold text-gray-900">Day 6: Complete pieces 2 & 3</p>
+          <p className="text-sm text-gray-600">Finish two more pieces for portfolio. Vary styles (modern, rustic, vintage).</p>
+        </div>
+        <div className="pl-4 border-l-2 border-indigo-400">
+          <p className="font-semibold text-gray-900">Day 7: Research pricing</p>
+          <p className="text-sm text-gray-600">Check Etsy, Facebook Marketplace, local competitors. Set your pricing structure.</p>
+        </div>
+        <div className="pl-4 border-l-2 border-indigo-400">
+          <p className="font-semibold text-gray-900">Day 8: Create portfolio page</p>
+          <p className="text-sm text-gray-600">Build simple website on Wix or Squarespace showcasing your 3 completed pieces.</p>
+        </div>
+        <div className="pl-4 border-l-2 border-indigo-400">
+          <p className="font-semibold text-gray-900">Day 9: List first piece for sale</p>
+          <p className="text-sm text-gray-600">Post your best piece on Facebook Marketplace and Craigslist with pricing.</p>
+        </div>
+        <div className="pl-4 border-l-2 border-indigo-400">
+          <p className="font-semibold text-gray-900">Day 10: Network locally</p>
+          <p className="text-sm text-gray-600">Visit 3 antique shops or consignment stores. Offer to refinish pieces on commission.</p>
+        </div>
+      </div>
+    </div>
+
+    <div className="text-center mt-6 p-4 bg-indigo-50 rounded-lg">
+      <p className="text-sm text-gray-700">+ Week 3: Customer Acquisition & Week 4: First Sales</p>
+    </div>
+  </div>
+</div>
       </section>
 
       <FAQ />
