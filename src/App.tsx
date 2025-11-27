@@ -614,7 +614,45 @@ function App() {
           </div>
         </div>
       </section>
+</section>
 
+      {/* Sample Playbook Preview */}
+      <section className="py-20 bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="text-4xl sm:text-5xl font-bold text-center text-gray-900 mb-4">
+            See What You'll Get
+          </h2>
+          <p className="text-xl text-gray-600 text-center mb-12">
+            A sample 4-week playbook
+          </p>
+          
+          <div className="bg-white rounded-2xl shadow-lg p-8 max-w-4xl mx-auto">
+            <h3 className="text-2xl font-bold text-gray-900 mb-4">Sample: Social Media Management Business</h3>
+            <p className="text-gray-600 mb-6">A 4-week action plan to launch your social media management service</p>
+            
+            <div className="space-y-4">
+              <div className="border-l-4 border-indigo-600 pl-4">
+                <h4 className="font-semibold text-gray-900">Week 1: Foundation & Validation</h4>
+                <p className="text-sm text-gray-600">Days 1-5: Market research, ideal client profile, outreach strategy</p>
+              </div>
+              <div className="border-l-4 border-indigo-600 pl-4">
+                <h4 className="font-semibold text-gray-900">Week 2: Package & Pricing</h4>
+                <p className="text-sm text-gray-600">Days 6-10: Service packages, pricing page, client onboarding</p>
+              </div>
+              <div className="border-l-4 border-indigo-600 pl-4">
+                <h4 className="font-semibold text-gray-900">Week 3: Launch & Outreach</h4>
+                <p className="text-sm text-gray-600">Days 11-15: Portfolio, proposals, network expansion</p>
+              </div>
+              <div className="border-l-4 border-indigo-600 pl-4">
+                <h4 className="font-semibold text-gray-900">Week 4: Close & Optimize</h4>
+                <p className="text-sm text-gray-600">Days 16-20: First customer, delivery setup, launch</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <FAQ />
       {/* What You Get */}
       <section className="py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
