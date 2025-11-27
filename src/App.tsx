@@ -814,7 +814,6 @@ function App() {
       </footer>
     </div>
   );
-}
 
 // Loading view components
 function GeneratingIdeasView() {
