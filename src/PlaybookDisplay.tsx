@@ -14,13 +14,13 @@ const handleDownload = () => {
   
   playbook.weeks.forEach(week => {
     doc.setFontSize(14);
-    doc.text(`Week ${week.week}: ${week.title}`, 20, y);
+    doc.text('Week ' + week.week + ': ' + week.title, 20, y);
     y += 7;
     
     week.dailyTasks.forEach(task => {
       if (y > 270) { doc.addPage(); y = 20; }
       doc.setFontSize(11);
-      doc.text(`Day ${task.day}: ${task.title}`, 20, y);
+      doc.text('Day ' + task.day + ': ' + task.title, 20, y);
       y += 5;
       doc.setFontSize(9);
       doc.text(task.description, 25, y, { maxWidth: 165 });
@@ -29,5 +29,5 @@ const handleDownload = () => {
     y += 5;
   });
   
-  doc.save(`${playbook.businessName}-Playbook.pdf`);
+  doc.save(playbook.businessName + '-Playbook.pdf');
 };
