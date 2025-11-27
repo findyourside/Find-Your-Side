@@ -28,7 +28,7 @@ export default async function handler(req, res) {
         htmlContent: `
           <h1>Your ${playbook.businessName} Playbook</h1>
           <p>${playbook.overview}</p>
-          <h2>Your 30-Day Plan:</h2>
+          <h2>Your 4-Week Plan:</h2>
           ${playbook.weeks.map(w => `
             <h3>Week ${w.week}: ${w.title}</h3>
             <p><strong>Focus:</strong> ${w.focusArea}</p>
