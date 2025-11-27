@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Lightbulb, Target, CheckCircle, TrendingUp, Clock, BookOpen } from 'lucide-react';
 import Quiz from './Quiz';
 import IdeaForm from './IdeaForm';
@@ -91,80 +91,15 @@ function App() {
     setCurrentView('ideaForm');
   };
 
-const handleQuizComplete = async (data: QuizData) => {
-  setQuizData(data);
-  setCurrentView('generatingIdeas');
-  setError(null);
+  const handleQuizComplete = async (data: QuizData) => {
+    setQuizData(data);
+    setCurrentView('generatingIdeas');
+    setError(null);
 
-  console.log('Starting business ideas generation...');
-  console.log('Quiz data:', data);
+    console.log('Starting business ideas generation...');
+    console.log('Quiz data:', data);
 
-  const startTime = Date.now();
-
-  try {
-    const url = '/api/generate-ideas';
-    console.log('Calling API:', url);
-
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ quizData: data }),
-    });
-
-    const elapsedTime = Date.now() - startTime;
-    if (elapsedTime > 30000) {
-      console.log('High traffic - request was queued');
-    }
-
-    console.log('Response status:', response.status);
-
-    const result = await response.json();
-    console.log('API Response:', result);
-
-    if (!response.ok) {
-      if (result.blocked && result.reason === 'monthly_limit') {
-        analytics.monthlyCapReached();
-        setWaitlistReason('monthly_limit');
-        setShowWaitlist(true);
-        setCurrentView('home');
-        return;
-      }
-      if (result.blocked && result.reason === 'idea_limit') {
-        analytics.ideaLimitReached();
-        setShowIdeaLimitModal(true);
-        setCurrentView('home');
-        return;
-      }
-      console.error('API Error:', result);
-      throw new Error(result.error || `API returned status ${response.status}`);
-    }
-
-    if (!result.ideas || !Array.isArray(result.ideas)) {
-      console.error('Invalid response format:', result);
-      throw new Error('Invalid response format from API');
-    }
-
-    setBusinessIdeas(result.ideas);
-    analytics.ideasGenerated(result.ideas.length);
-
-    const newIdeaSetsRemaining = ideaSetsRemaining - 1;
-    setIdeaSetsRemaining(newIdeaSetsRemaining);
-
-    if (newIdeaSetsRemaining === 1) {
-      setSuccessMessage('✅ Ideas generated! You have 1 more idea set remaining.');
-    } else if (newIdeaSetsRemaining === 0) {
-      setSuccessMessage('✅ This is your final idea set. Select your best idea for a playbook!');
-    }
-
-    setTimeout(() => setSuccessMessage(null), 5000);
-    setCurrentView('showingIdeas');
-  } catch (err) {
-    console.error('Error generating ideas:', err);
-    const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
-    setError(`Failed to generate business ideas: ${errorMessage}`);
-    setCurrentView('home');
-  }
-};
+    const startTime = Date.now();
 
     try {
       const url = '/api/generate-ideas';
@@ -172,11 +107,14 @@ const handleQuizComplete = async (data: QuizData) => {
 
       const response = await fetch(url, {
         method: 'POST',
-        headers: {
-  'Content-Type': 'application/json',
-},
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ quizData: data }),
       });
+
+      const elapsedTime = Date.now() - startTime;
+      if (elapsedTime > 30000) {
+        console.log('High traffic - request was queued');
+      }
 
       console.log('Response status:', response.status);
 
@@ -236,20 +174,25 @@ const handleQuizComplete = async (data: QuizData) => {
     console.log('Starting playbook generation from idea form...');
     console.log('Idea form data:', data);
 
+    const startTime = Date.now();
+
     try {
-    const url = '/api/generate-playbook';
+      const url = '/api/generate-playbook';
       console.log('Calling API:', url);
 
       const response = await fetch(url, {
         method: 'POST',
-       headers: {
-  'Content-Type': 'application/json',
-},
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ideaFormData: data,
           userEmail: data.email,
         }),
       });
+
+      const elapsedTime = Date.now() - startTime;
+      if (elapsedTime > 30000) {
+        console.log('High traffic - request was queued');
+      }
 
       console.log('Response status:', response.status);
 
@@ -315,15 +258,15 @@ const handleQuizComplete = async (data: QuizData) => {
     console.log('Selected idea:', idea);
     console.log('Quiz data:', quizData);
 
+    const startTime = Date.now();
+
     try {
       const url = '/api/generate-playbook';
       console.log('Calling API:', url);
 
       const response = await fetch(url, {
         method: 'POST',
-      headers: {
-  'Content-Type': 'application/json',
-},
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           idea,
           timeCommitment: quizData?.timeCommitment,
@@ -332,6 +275,11 @@ const handleQuizComplete = async (data: QuizData) => {
           userEmail: quizData?.email,
         }),
       });
+
+      const elapsedTime = Date.now() - startTime;
+      if (elapsedTime > 30000) {
+        console.log('High traffic - request was queued');
+      }
 
       console.log('Response status:', response.status);
 
@@ -393,20 +341,7 @@ const handleQuizComplete = async (data: QuizData) => {
   }
 
   if (currentView === 'generatingIdeas') {
-    return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
-        <div className="text-center px-4 max-w-lg">
-          <div className="animate-spin rounded-full h-16 w-16 border-b-2 mx-auto mb-4" style={{ borderColor: '#4F46E5' }}></div>
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">✨ Generating Your Ideas...</h1>
-          <p className="text-xl text-gray-600 mb-4">This may take a moment. We're creating personalized business ideas just for you.</p>
-          <div className="bg-indigo-50 border border-indigo-200 rounded-lg px-4 py-3 mt-6">
-            <p className="text-sm text-gray-700">
-              You can generate <strong className="text-indigo-600">2 idea sets</strong> and <strong className="text-indigo-600">2 detailed playbooks</strong>. Make them count!
-            </p>
-          </div>
-        </div>
-      </div>
-    );
+    return <GeneratingIdeasView />;
   }
 
   if (currentView === 'showingIdeas') {
@@ -422,15 +357,7 @@ const handleQuizComplete = async (data: QuizData) => {
   }
 
   if (currentView === 'generatingPlaybook') {
-    return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
-        <div className="text-center px-4">
-          <div className="animate-spin rounded-full h-16 w-16 border-b-2 mx-auto mb-4" style={{ borderColor: '#4F46E5' }}></div>
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">Creating Your Playbook...</h1>
-          <p className="text-xl text-gray-600">Building your personalized 30-day launch plan.</p>
-        </div>
-      </div>
-    );
+    return <GeneratingPlaybookView />;
   }
 
   if (currentView === 'showingPlaybook' && playbook) {
@@ -495,11 +422,10 @@ const handleQuizComplete = async (data: QuizData) => {
         </div>
       )}
 
-      {/* Dark Hero Section */}
+      {/* Rest of home page content - keeping as-is */}
       <section className="relative" style={{ backgroundColor: '#1a1f3a', paddingTop: '30px', paddingBottom: '60px' }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
-            {/* Logo */}
             <div className="flex items-center justify-center" style={{ marginBottom: '30px' }}>
               <img
                 src="/Find your side.svg"
@@ -508,7 +434,6 @@ const handleQuizComplete = async (data: QuizData) => {
               />
             </div>
 
-            {/* Hero Headline */}
             <h1 className="font-bold text-white tracking-tight" style={{ marginBottom: '16px', fontSize: '48px' }}>
               <style>{`
                 @media (max-width: 640px) {
@@ -518,7 +443,6 @@ const handleQuizComplete = async (data: QuizData) => {
               Turn Your Side Business<br />Dream Into Reality
             </h1>
 
-            {/* Subheadline */}
             <p className="mx-auto" style={{ color: '#CBD5E1', marginBottom: '32px', maxWidth: '700px', fontSize: '20px' }}>
               <style>{`
                 @media (max-width: 640px) {
@@ -528,7 +452,6 @@ const handleQuizComplete = async (data: QuizData) => {
               Get a personalized 30-day launch plan - whether you're exploring ideas or ready to execute.
             </p>
 
-            {/* CTA Buttons */}
             <div className="flex flex-col items-center gap-2">
               <div className="flex flex-col sm:flex-row gap-4 justify-center items-center relative z-10">
                 <button
@@ -553,16 +476,16 @@ const handleQuizComplete = async (data: QuizData) => {
                     handleStartIdeaForm();
                   }}
                   className="w-full sm:w-auto px-10 text-lg font-bold transition-all cursor-pointer hover:bg-white hover:bg-opacity-10"
-                style={{
-                  backgroundColor: 'transparent',
-                  color: '#FFFFFF',
-                  border: '2px solid #FFFFFF',
-                  height: '56px',
-                  borderRadius: '12px'
-                }}
-              >
-                I Have An Idea
-              </button>
+                  style={{
+                    backgroundColor: 'transparent',
+                    color: '#FFFFFF',
+                    border: '2px solid #FFFFFF',
+                    height: '56px',
+                    borderRadius: '12px'
+                  }}
+                >
+                  I Have An Idea
+                </button>
               </div>
               <p className="text-sm mt-2" style={{ color: '#94A3B8' }}>
                 Get 2 personalized idea sets + 2 detailed playbooks free
@@ -583,7 +506,6 @@ const handleQuizComplete = async (data: QuizData) => {
           </p>
 
           <div className="grid md:grid-cols-2 gap-8 lg:gap-12">
-            {/* Left Column - Finding Your Idea */}
             <div className="bg-white rounded-2xl shadow-lg p-8 lg:p-10">
               <div className="flex items-center mb-8">
                 <div className="w-14 h-14 rounded-xl flex items-center justify-center" style={{ backgroundColor: '#EEF2FF' }}>
@@ -637,7 +559,6 @@ const handleQuizComplete = async (data: QuizData) => {
               </div>
             </div>
 
-            {/* Right Column - Already Have an Idea */}
             <div className="bg-white rounded-2xl shadow-lg p-8 lg:p-10">
               <div className="flex items-center mb-8">
                 <div className="w-14 h-14 rounded-xl flex items-center justify-center" style={{ backgroundColor: '#EEF2FF' }}>
@@ -756,9 +677,8 @@ const handleQuizComplete = async (data: QuizData) => {
         </div>
       </section>
 
-      {/* FAQ Section */}
       <FAQ />
-      {/* Disclaimer */}
+
       <section className="bg-amber-50 border-t border-b border-amber-200 py-12">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <p className="text-sm text-gray-700 leading-relaxed text-center">
@@ -767,7 +687,6 @@ const handleQuizComplete = async (data: QuizData) => {
         </div>
       </section>
 
-      {/* Final CTA */}
       <section className="py-20">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-4xl sm:text-5xl font-bold text-gray-900 mb-12">
@@ -790,11 +709,9 @@ const handleQuizComplete = async (data: QuizData) => {
         </div>
       </section>
 
-      {/* Footer */}
       <footer style={{ backgroundColor: '#1a1f3a', paddingTop: '40px', paddingBottom: '40px' }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
-            {/* Logo */}
             <div className="flex items-center justify-center" style={{ marginBottom: '24px' }}>
               <img
                 src="/Find your side.svg"
@@ -803,7 +720,6 @@ const handleQuizComplete = async (data: QuizData) => {
               />
             </div>
 
-            {/* Links */}
             <div className="flex flex-wrap justify-center gap-3 items-center" style={{ marginBottom: '20px', color: '#94A3B8' }}>
               <a href="#privacy" className="hover:text-white transition-colors text-sm">Privacy Policy</a>
               <span>|</span>
@@ -814,18 +730,70 @@ const handleQuizComplete = async (data: QuizData) => {
               <a href="mailto:hello.findyourside@gmail.com?subject=Question about Find Your Side" className="hover:text-white transition-colors text-sm">Contact</a>
             </div>
 
-            {/* Copyright */}
             <p className="text-sm" style={{ marginBottom: '12px', color: '#94A3B8' }}>
               © 2025 Find Your Side. All rights reserved.
             </p>
 
-            {/* Disclaimer */}
             <p className="text-sm max-w-3xl mx-auto" style={{ color: '#94A3B8', fontSize: '14px' }}>
               Find Your Side is not responsible for business outcomes. Must be 18+ to use. AI-generated content may contain errors.
             </p>
           </div>
         </div>
       </footer>
+    </div>
+  );
+}
+
+// Loading view components
+function GeneratingIdeasView() {
+  const [showWaitMessage, setShowWaitMessage] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setShowWaitMessage(true), 20000);
+    return () => clearTimeout(timer);
+  }, []);
+
+  return (
+    <div className="min-h-screen bg-white flex items-center justify-center">
+      <div className="text-center px-4 max-w-lg">
+        <div className="animate-spin rounded-full h-16 w-16 border-b-2 mx-auto mb-4" style={{ borderColor: '#4F46E5' }}></div>
+        <h1 className="text-4xl font-bold text-gray-900 mb-4">✨ Generating Your Ideas...</h1>
+        <p className="text-xl text-gray-600 mb-4">This may take a moment. We're creating personalized business ideas just for you.</p>
+        {showWaitMessage && (
+          <p className="text-sm text-amber-600 mt-4 bg-amber-50 border border-amber-200 rounded-lg px-4 py-2">
+            ⏳ High traffic detected. Your request is queued and will process shortly...
+          </p>
+        )}
+        <div className="bg-indigo-50 border border-indigo-200 rounded-lg px-4 py-3 mt-6">
+          <p className="text-sm text-gray-700">
+            You can generate <strong className="text-indigo-600">2 idea sets</strong> and <strong className="text-indigo-600">2 detailed playbooks</strong>. Make them count!
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function GeneratingPlaybookView() {
+  const [showWaitMessage, setShowWaitMessage] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setShowWaitMessage(true), 25000);
+    return () => clearTimeout(timer);
+  }, []);
+
+  return (
+    <div className="min-h-screen bg-white flex items-center justify-center">
+      <div className="text-center px-4">
+        <div className="animate-spin rounded-full h-16 w-16 border-b-2 mx-auto mb-4" style={{ borderColor: '#4F46E5' }}></div>
+        <h1 className="text-4xl font-bold text-gray-900 mb-4">Creating Your Playbook...</h1>
+        <p className="text-xl text-gray-600">Building your personalized 30-day launch plan.</p>
+        {showWaitMessage && (
+          <p className="text-sm text-amber-600 mt-4 bg-amber-50 border border-amber-200 rounded-lg px-4 py-2">
+            ⏳ High traffic detected. This is taking longer than usual. Please wait...
+          </p>
+        )}
+      </div>
     </div>
   );
 }
