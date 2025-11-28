@@ -685,8 +685,11 @@ function App() {
     <div className="text-center mt-6 p-4 bg-indigo-50 rounded-lg">
       <p className="text-sm text-gray-700">+ Week 3: Customer Acquisition & Week 4: First Sales</p>
     </div>
+  </div>
+</div>
+        </div>
+      </section>
  
-      <FAQ />
       {/* What You Get */}
       <section className="py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
