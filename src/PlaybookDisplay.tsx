@@ -239,10 +239,6 @@ export default function PlaybookDisplay({ playbook, onBack, userEmail, timeCommi
 
         <InterestCapture userEmail={userEmail} />
         <FeatureValidation userEmail={userEmail} />
-
-        <div className="bg-white rounded-2xl shadow-lg p-8 lg:p-12 mb-8">
-          <div className="space-y-6">
-            {playbook.weeks.map((week) => (
               <div
                 key={week.week}
                 className="border-2 border-gray-200 rounded-lg overflow-hidden transition-all hover:border-indigo-300"
