@@ -39,31 +39,33 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'Missing business idea' });
   }
 
-  const prompt = `Create a 4-week launch playbook for "${businessIdea}".
+  const prompt = `Create a 4-week launch playbook for: ${businessIdea}
 Time commitment: ${timeCommitment}
 ${budget ? `Budget: ${budget}` : ''}
 ${skillsExperience ? `Skills/Experience: ${skillsExperience}` : ''}
 
-Generate EXACTLY 4 weeks with 5 daily tasks per week (20 tasks total, days 1-20).
+Generate exactly 4 weeks with 5 daily tasks per week (20 tasks total, days 1-20).
 Each task needs: day number, title, detailed description (under 100 words), time estimate, and 2-3 resources.
 
-Return ONLY valid JSON (no markdown):
+Return ONLY valid JSON (no markdown, no code blocks):
 {
-  "businessName": "Creative name for the business",
-  "overview": "A 4-week action plan to launch ${businessIdea}",
+  "businessName": "A short, creative business name",
+  "overview": "A 1-2 sentence overview of the launch strategy tailored to this specific business",
   "weeks": [
     {
       "week": 1,
-      "title": "Week title",
-      "focusArea": "Focus area",
-      "successMetric": "Success metric",
-      "totalTime": "Total hours",
+      "title": "Week 1 title",
+      "focusArea": "What this week focuses on",
+      "successMetric": "How to measure success this week",
+      "totalTime": "Total hours for the week",
       "dailyTasks": [
-        {"day": 1, "title": "Task", "description": "Details", "timeEstimate": "2 hours", "resources": ["Resource 1", "Resource 2"]}
+        {"day": 1, "title": "Task title", "description": "Detailed description under 100 words", "timeEstimate": "X hours", "resources": ["Resource 1", "Resource 2", "Resource 3"]}
       ]
     }
   ]
-}`;
+}
+
+Important: Make the overview personalized to "${businessIdea}" - not generic. Use actual details about this specific business type.`;
 
   try {
     const controller = new AbortController();
@@ -110,7 +112,6 @@ Return ONLY valid JSON (no markdown):
       return res.status(500).json({ error: 'Invalid playbook structure' });
     }
 
-    // Generate PDF
     const pdfData = generatePDFData(playbook);
 
     return res.status(200).json({ playbook, pdfData });
@@ -122,7 +123,6 @@ Return ONLY valid JSON (no markdown):
 }
 
 function generatePDFData(playbook) {
-  // Simple text-based PDF data for browser to convert
   let content = `${playbook.businessName}\n\n`;
   content += `${playbook.overview}\n\n`;
   
