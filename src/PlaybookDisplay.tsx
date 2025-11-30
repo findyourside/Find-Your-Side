@@ -235,7 +235,12 @@ export default function PlaybookDisplay({ playbook, onBack, userEmail, timeCommi
               setOptInDay1={setOptInDay1}
             />
           )}
+        </div>
 
+        <InterestCapture userEmail={userEmail} />
+        <FeatureValidation userEmail={userEmail} />
+
+        <div className="bg-white rounded-2xl shadow-lg p-8 lg:p-12 mb-8">
           <div className="space-y-6">
             {playbook.weeks.map((week) => (
               <div
@@ -344,9 +349,6 @@ export default function PlaybookDisplay({ playbook, onBack, userEmail, timeCommi
             ))}
           </div>
         </div>
-
-        <InterestCapture userEmail={userEmail} />
-        <FeatureValidation userEmail={userEmail} />
       </div>
     </div>
   );
