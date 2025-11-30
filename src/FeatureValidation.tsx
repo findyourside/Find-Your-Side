@@ -3,7 +3,7 @@ import { supabase } from './lib/supabase';
 import { analytics } from './lib/analytics';
 
 const FEATURE_OPTIONS = [
-  'Longer playbook (60-90 days to scale)',
+  'Longer playbook (30-60 days)',
   'Weekly check-in emails to stay accountable',
   'Community of other builders',
   'One-on-one coaching or expert support',
