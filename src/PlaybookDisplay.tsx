@@ -196,7 +196,7 @@ export default function PlaybookDisplay({ playbook, onBack, userEmail, timeCommi
         <div className="bg-white rounded-2xl shadow-lg p-8 lg:p-12 mb-8">
           <div className="text-center mb-8">
             <h1 className="text-4xl font-bold text-gray-900 mb-4">
-              Your 30-Day Launch Playbook
+              Your 4-Week Launch Playbook
             </h1>
             <h2 className="text-2xl font-semibold text-indigo-600 mb-4">
               {playbook.businessName}
