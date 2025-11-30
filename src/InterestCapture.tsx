@@ -86,10 +86,10 @@ export default function InterestCapture({ userEmail }: InterestCaptureProps) {
     <div className="max-w-4xl mx-auto px-4 py-12">
       <div className="text-center mb-8">
         <h2 className="text-3xl font-bold text-gray-900 mb-3">
-          You've got your 30-day launch plan. What's next?
+          You've got your 4-week launch plan. What's next?
         </h2>
         <p className="text-lg text-gray-600">
-          Let us know how we can support you beyond Day 30
+          Let us know how we can support you beyond 4 weeks
         </p>
       </div>
 
@@ -110,7 +110,7 @@ export default function InterestCapture({ userEmail }: InterestCaptureProps) {
           onClick={handleExtendedPlaybook}
           className="px-6 py-3 bg-gradient-to-r from-indigo-600 to-cyan-500 text-white rounded-lg font-semibold hover:from-indigo-700 hover:to-cyan-600 transition-all shadow-md hover:shadow-lg"
         >
-          I want a 60-90 day growth plan
+          I want a 30-60 day growth plan
         </button>
 
         <button
