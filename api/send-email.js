@@ -9,7 +9,6 @@ export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
   const { email, playbook } = req.body;
-
   if (!email || !playbook) {
     return res.status(400).json({ error: 'Missing email or playbook' });
   }
@@ -24,9 +23,9 @@ export default async function handler(req, res) {
       body: JSON.stringify({
         sender: { name: 'Find Your Side', email: 'noreply@findyourside.com' },
         to: [{ email: email }],
-        subject: `Your ${playbook.businessName} Launch Playbook`,
+        subject: `Your 4-Week Action Plan: ${playbook.businessName}`,
         htmlContent: `
-          <h1>Your ${playbook.businessName} Playbook</h1>
+          <h1>Your ${playbook.businessName} Action Plan</h1>
           <p>${playbook.overview}</p>
           <h2>Your 4-Week Plan:</h2>
           ${playbook.weeks.map(w => `
