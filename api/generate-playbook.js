@@ -32,40 +32,33 @@ export default async function handler(req, res) {
   console.log('Extracted businessIdea:', businessIdea);
 
   const timeCommitment = req.body.timeCommitment || ideaFormData?.timeCommitment || '10 hours/week';
-  const budget = req.body.budget || ideaFormData?.budget || '';
-  const skillsExperience = req.body.skillsExperience || ideaFormData?.skillsExperience || '';
 
   if (!businessIdea || businessIdea === 'Unknown Business') {
     return res.status(400).json({ error: 'Missing business idea' });
   }
 
-  const prompt = `Create a 4-week launch playbook for: ${businessIdea}
-Time commitment: ${timeCommitment}
-${budget ? `Budget: ${budget}` : ''}
-${skillsExperience ? `Skills/Experience: ${skillsExperience}` : ''}
+  const prompt = `Create a 4-week action plan for: ${businessIdea}
+Time: ${timeCommitment}
 
-Generate exactly 4 weeks with 5 daily tasks per week (20 tasks total, days 1-20).
-Each task needs: day number, title, detailed description (under 100 words), time estimate, and 2-3 resources.
+4 weeks, 5 tasks/week (20 days). Each task: day, title, description (50 words max), time estimate, 2-3 resources.
 
-Return ONLY valid JSON (no markdown, no code blocks):
+Return JSON only:
 {
-  "businessName": "A short, creative business name",
-  "overview": "A 1-2 sentence overview of the launch strategy tailored to this specific business",
+  "businessName": "Name",
+  "overview": "1-2 sentences about this launch strategy",
   "weeks": [
     {
       "week": 1,
-      "title": "Week 1 title",
-      "focusArea": "What this week focuses on",
-      "successMetric": "How to measure success this week",
-      "totalTime": "Total hours for the week",
+      "title": "Week title",
+      "focusArea": "Area",
+      "successMetric": "Metric",
+      "totalTime": "Hours",
       "dailyTasks": [
-        {"day": 1, "title": "Task title", "description": "Detailed description under 100 words", "timeEstimate": "X hours", "resources": ["Resource 1", "Resource 2", "Resource 3"]}
+        {"day": 1, "title": "Task", "description": "50 words max", "timeEstimate": "X hours", "resources": ["R1", "R2", "R3"]}
       ]
     }
   ]
-}
-
-Important: Make the overview personalized to "${businessIdea}" - not generic. Use actual details about this specific business type.`;
+}`;
 
   try {
     const controller = new AbortController();
@@ -80,7 +73,7 @@ Important: Make the overview personalized to "${businessIdea}" - not generic. Us
       },
       body: JSON.stringify({
         model: 'claude-sonnet-4-20250514',
-        max_tokens: 3500,
+        max_tokens: 3000,
         messages: [{ role: 'user', content: prompt }],
       }),
       signal: controller.signal,
