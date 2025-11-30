@@ -230,9 +230,9 @@ function App() {
       setPlaybooksRemaining(newPlaybooksRemaining);
 
       if (newPlaybooksRemaining === 1) {
-        setSuccessMessage('✅ Playbook created! You have 1 more playbook remaining. Choose your next idea carefully!');
+        setSuccessMessage('✅ Action plan created! You have 1 more action plan remaining.');
       } else if (newPlaybooksRemaining === 0) {
-        setSuccessMessage("✅ Playbook created! You've used both free playbooks.");
+        setSuccessMessage("✅ Action plan created! You've used both free action plans.");
       }
 
       setTimeout(() => setSuccessMessage(null), 6000);
@@ -240,7 +240,7 @@ function App() {
     } catch (err) {
       console.error('Error generating playbook:', err);
       const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
-      setError(`Failed to generate playbook: ${errorMessage}`);
+      setError(`Failed to generate action plan: ${errorMessage}`);
       setCurrentView('ideaForm');
     }
   };
@@ -317,9 +317,9 @@ function App() {
       setPlaybooksRemaining(newPlaybooksRemaining);
 
       if (newPlaybooksRemaining === 1) {
-        setSuccessMessage('✅ Playbook created! You have 1 more playbook remaining. Choose your next idea carefully!');
+        setSuccessMessage('✅ Action plan created! You have 1 more action plan remaining.');
       } else if (newPlaybooksRemaining === 0) {
-        setSuccessMessage("✅ Playbook created! You've used both free playbooks.");
+        setSuccessMessage("✅ Action plan created! You've used both free action plans.");
       }
 
       setTimeout(() => setSuccessMessage(null), 6000);
@@ -327,7 +327,7 @@ function App() {
     } catch (err) {
       console.error('Error generating playbook:', err);
       const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
-      setError(`Failed to generate playbook: ${errorMessage}`);
+      setError(`Failed to generate action plan: ${errorMessage}`);
       setCurrentView('showingIdeas');
     }
   };
@@ -389,10 +389,10 @@ function App() {
               You've generated your 2 idea sets!
             </h2>
             <p className="text-gray-600 mb-4">
-              That's 10 personalized ideas total! Want to generate playbooks for your favorite ideas?
+              That's 10 personalized ideas total! Want to generate action plans for your favorite ideas?
             </p>
             <p className="text-gray-700 font-semibold mb-6">
-              You have {playbooksRemaining} playbook generations remaining.
+              You have {playbooksRemaining} action plan generations remaining.
             </p>
             <button
               onClick={() => setShowIdeaLimitModal(false)}
@@ -422,10 +422,10 @@ function App() {
         </div>
       )}
 
-      <section className="relative" style={{ backgroundColor: '#1a1f3a', paddingTop: '30px', paddingBottom: '60px' }}>
+      <section className="relative" style={{ backgroundColor: '#1a1f3a', paddingTop: '16px', paddingBottom: '32px' }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
-            <div className="flex items-center justify-center" style={{ marginBottom: '30px' }}>
+            <div className="flex items-center justify-center" style={{ marginBottom: '20px' }}>
               <img
                 src="/Find your side.svg"
                 alt="Find Your Side - Idea to Execution"
@@ -433,7 +433,7 @@ function App() {
               />
             </div>
 
-            <h1 className="font-bold text-white tracking-tight" style={{ marginBottom: '16px', fontSize: '48px' }}>
+            <h1 className="font-bold text-white tracking-tight" style={{ marginBottom: '12px', fontSize: '48px' }}>
               <style>{`
                 @media (max-width: 640px) {
                   h1 { font-size: 36px !important; }
@@ -442,13 +442,13 @@ function App() {
               Turn Your Side Business<br />Dream Into Reality
             </h1>
 
-            <p className="mx-auto" style={{ color: '#CBD5E1', marginBottom: '32px', maxWidth: '700px', fontSize: '20px' }}>
+            <p className="mx-auto" style={{ color: '#CBD5E1', marginBottom: '24px', maxWidth: '700px', fontSize: '20px' }}>
               <style>{`
                 @media (max-width: 640px) {
                   p { font-size: 18px !important; }
                 }
               `}</style>
-              Get a personalized 4-week launch plan - whether you're exploring ideas or ready to execute.
+              Get a personalized 4-week action plan - whether you're exploring ideas or ready to execute.
             </p>
 
             <div className="flex flex-col items-center gap-2">
@@ -487,19 +487,19 @@ function App() {
                 </button>
               </div>
               <p className="text-sm mt-2" style={{ color: '#94A3B8' }}>
-                Get 2 personalized idea sets + 2 detailed playbooks free
+                Get 2 personalized idea sets + 2 detailed action plans free
               </p>
             </div>
           </div>
         </div>
       </section>
 
-      <section className="bg-gray-50 py-20">
+      <section className="bg-gray-50 py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-4xl sm:text-5xl font-bold text-center text-gray-900 mb-4">
+          <h2 className="text-4xl sm:text-5xl font-bold text-center text-gray-900 mb-3">
             How It Works
           </h2>
-          <p className="text-xl text-gray-600 text-center mb-16">
+          <p className="text-xl text-gray-600 text-center mb-12">
             Choose your path to launch
           </p>
 
@@ -550,7 +550,7 @@ function App() {
                     4
                   </div>
                   <div className="ml-4">
-                    <h4 className="font-semibold text-gray-900 mb-1">Get your launch playbook</h4>
+                    <h4 className="font-semibold text-gray-900 mb-1">Get your action plan</h4>
                     <p className="text-gray-600">Receive your personalized 4-week plan</p>
                   </div>
                 </div>
@@ -593,8 +593,8 @@ function App() {
                     3
                   </div>
                   <div className="ml-4">
-                    <h4 className="font-semibold text-gray-900 mb-1">Get your launch playbook</h4>
-                    <p className="text-gray-600">Receive your personalized 4-week action plan</p>
+                    <h4 className="font-semibold text-gray-900 mb-1">Get your action plan</h4>
+                    <p className="text-gray-600">Receive your personalized 4-week plan</p>
                   </div>
                 </div>
 
@@ -613,13 +613,13 @@ function App() {
         </div>
       </section>
 
-      <section className="py-20 bg-gray-50">
+      <section className="py-12 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-4xl sm:text-5xl font-bold text-center text-gray-900 mb-4">
+          <h2 className="text-4xl sm:text-5xl font-bold text-center text-gray-900 mb-3">
             See What You'll Get
           </h2>
-          <p className="text-xl text-gray-600 text-center mb-12">
-            A sample 4-week playbook
+          <p className="text-xl text-gray-600 text-center mb-10">
+            A sample 4-week action plan
           </p>
           
           <div className="bg-white rounded-2xl shadow-lg p-8 max-w-4xl mx-auto">
@@ -682,190 +682,3 @@ function App() {
               <div className="text-center mt-6 p-4 bg-indigo-50 rounded-lg">
                 <p className="text-sm text-gray-700">+ Week 3: Customer Acquisition & Week 4: First Sales</p>
               </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section className="py-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-4xl sm:text-5xl font-bold text-center text-gray-900 mb-4">
-            What You Get
-          </h2>
-          <p className="text-xl text-gray-600 text-center mb-16">
-            Everything you need to launch in 4 weeks
-          </p>
-
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
-            <div className="text-center">
-              <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4" style={{ backgroundColor: '#EEF2FF' }}>
-                <BookOpen className="w-8 h-8" style={{ color: '#4F46E5' }} />
-              </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-2">Week-by-week action plan</h3>
-              <p className="text-gray-600">Clear roadmap broken down into manageable weekly goals</p>
-            </div>
-
-            <div className="text-center">
-              <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4" style={{ backgroundColor: '#EEF2FF' }}>
-                <CheckCircle className="w-8 h-8" style={{ color: '#4F46E5' }} />
-              </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-2">Specific daily tasks</h3>
-              <p className="text-gray-600">Actionable steps you can complete each day</p>
-            </div>
-
-            <div className="text-center">
-              <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4" style={{ backgroundColor: '#EEF2FF' }}>
-                <Clock className="w-8 h-8" style={{ color: '#4F46E5' }} />
-              </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-2">Time estimates for each step</h3>
-              <p className="text-gray-600">Get a time estimate to complete key tasks</p>
-            </div>
-
-            <div className="text-center">
-              <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4" style={{ backgroundColor: '#EEF2FF' }}>
-                <Target className="w-8 h-8" style={{ color: '#4F46E5' }} />
-              </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-2">Resources needed for each task</h3>
-              <p className="text-gray-600">Suggested tools and platforms for each step</p>
-            </div>
-
-            <div className="text-center">
-              <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4" style={{ backgroundColor: '#EEF2FF' }}>
-                <TrendingUp className="w-8 h-8" style={{ color: '#4F46E5' }} />
-              </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-2">Success metrics to track progress</h3>
-              <p className="text-gray-600">Clear milestones so you know you're on track</p>
-            </div>
-
-            <div className="text-center">
-              <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4" style={{ backgroundColor: '#EEF2FF' }}>
-                <Lightbulb className="w-8 h-8" style={{ color: '#4F46E5' }} />
-              </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-2">Customized to your situation</h3>
-              <p className="text-gray-600">Tasks adapted to your skills, time, and experience level</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <FAQ />
-
-      <section className="bg-amber-50 border-t border-b border-amber-200 py-12">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <p className="text-sm text-gray-700 leading-relaxed text-center">
-            <strong>Disclaimer:</strong> Find Your Side provides AI-generated suggestions for informational purposes only. These suggestions do not constitute professional business, financial, or legal advice. Find Your Side makes no warranties regarding accuracy, completeness, or suitability of the information provided and disclaims all liability for any decisions made based on this information. Always conduct your own research and consult qualified professionals before making business decisions.
-          </p>
-        </div>
-      </section>
-
-      <section className="py-20">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-4xl sm:text-5xl font-bold text-gray-900 mb-12">
-            Ready to start your side business?
-          </h2>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-            <button
-              onClick={handleStartQuiz}
-              className="w-full sm:w-auto px-10 py-5 bg-indigo-600 text-white text-lg font-semibold rounded-lg hover:bg-indigo-700 transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
-            >
-              Find My Idea
-            </button>
-            <button
-              onClick={handleStartIdeaForm}
-              className="w-full sm:w-auto px-10 py-5 border-2 border-indigo-600 text-indigo-600 text-lg font-semibold rounded-lg hover:bg-indigo-50 transition-all"
-            >
-              I Have An Idea
-            </button>
-          </div>
-        </div>
-      </section>
-
-      <footer style={{ backgroundColor: '#1a1f3a', paddingTop: '40px', paddingBottom: '40px' }}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center">
-            <div className="flex items-center justify-center" style={{ marginBottom: '24px' }}>
-              <img
-                src="/Find your side.svg"
-                alt="Find Your Side - Idea to Execution"
-                className="w-[280px] h-auto"
-              />
-            </div>
-
-            <div className="flex flex-wrap justify-center gap-3 items-center" style={{ marginBottom: '20px', color: '#94A3B8' }}>
-              <a href="#privacy" className="hover:text-white transition-colors text-sm">Privacy Policy</a>
-              <span>|</span>
-              <a href="#terms" className="hover:text-white transition-colors text-sm">Terms</a>
-              <span>|</span>
-              <a href="#cookies" className="hover:text-white transition-colors text-sm">Cookie Policy</a>
-              <span>|</span>
-              <a href="mailto:hello.findyourside@gmail.com?subject=Question about Find Your Side" className="hover:text-white transition-colors text-sm">Contact</a>
-            </div>
-
-            <p className="text-sm" style={{ marginBottom: '12px', color: '#94A3B8' }}>
-              © 2025 Find Your Side. All rights reserved.
-            </p>
-
-            <p className="text-sm max-w-3xl mx-auto" style={{ color: '#94A3B8', fontSize: '14px' }}>
-              Find Your Side is not responsible for business outcomes. Must be 18+ to use. AI-generated content may contain errors.
-            </p>
-          </div>
-        </div>
-      </footer>
-    </div>
-  );
-}
-
-function GeneratingIdeasView() {
-  const [showWaitMessage, setShowWaitMessage] = useState(false);
-
-  useEffect(() => {
-    const timer = setTimeout(() => setShowWaitMessage(true), 20000);
-    return () => clearTimeout(timer);
-  }, []);
-
-  return (
-    <div className="min-h-screen bg-white flex items-center justify-center">
-      <div className="text-center px-4 max-w-lg">
-        <div className="animate-spin rounded-full h-16 w-16 border-b-2 mx-auto mb-4" style={{ borderColor: '#4F46E5' }}></div>
-        <h1 className="text-4xl font-bold text-gray-900 mb-4">✨ Generating Your Ideas...</h1>
-        <p className="text-xl text-gray-600 mb-4">This may take a moment. We're creating personalized business ideas just for you.</p>
-        {showWaitMessage && (
-          <p className="text-sm text-amber-600 mt-4 bg-amber-50 border border-amber-200 rounded-lg px-4 py-2">
-            ⏳ High traffic detected. Your request is queued and will process shortly...
-          </p>
-        )}
-        <div className="bg-indigo-50 border border-indigo-200 rounded-lg px-4 py-3 mt-6">
-          <p className="text-sm text-gray-700">
-            You can generate <strong className="text-indigo-600">2 idea sets</strong> and <strong className="text-indigo-600">2 detailed playbooks</strong>. Make them count!
-          </p>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function GeneratingPlaybookView() {
-  const [showWaitMessage, setShowWaitMessage] = useState(false);
-
-  useEffect(() => {
-    const timer = setTimeout(() => setShowWaitMessage(true), 25000);
-    return () => clearTimeout(timer);
-  }, []);
-
-  return (
-    <div className="min-h-screen bg-white flex items-center justify-center">
-      <div className="text-center px-4">
-        <div className="animate-spin rounded-full h-16 w-16 border-b-2 mx-auto mb-4" style={{ borderColor: '#4F46E5' }}></div>
-        <h1 className="text-4xl font-bold text-gray-900 mb-4">Creating Your Playbook...</h1>
-        <p className="text-xl text-gray-600">Building your personalized 4-week launch plan.</p>
-        {showWaitMessage && (
-          <p className="text-sm text-amber-600 mt-4 bg-amber-50 border border-amber-200 rounded-lg px-4 py-2">
-            ⏳ High traffic detected. This is taking longer than usual. Please wait...
-          </p>
-        )}
-      </div>
-    </div>
-  );
-}
-
-export default App;
