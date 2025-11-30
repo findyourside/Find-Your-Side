@@ -18,6 +18,7 @@ export default function InterestCapture({ userEmail }: InterestCaptureProps) {
 
   const handleInterestSubmit = async (type: InterestType, metadata?: Record<string, unknown>) => {
     setIsSubmitting(true);
+    setSuccessMessage('');
 
     try {
       const { error } = await supabase
@@ -42,41 +43,47 @@ export default function InterestCapture({ userEmail }: InterestCaptureProps) {
         setSuccessMessage("You're on the list!");
         setShowNewsletterForm(false);
       }
+
+      setTimeout(() => setSuccessMessage(''), 5000);
     } catch (error) {
       console.error('Error submitting interest:', error);
       setSuccessMessage('Something went wrong. Please try again.');
+      setTimeout(() => setSuccessMessage(''), 5000);
     } finally {
       setIsSubmitting(false);
     }
   };
 
   const handleExtendedPlaybook = () => {
+    setSuccessMessage('');
+    setShowAllSetMessage(false);
+    
     if (userEmail) {
       handleInterestSubmit('extended_playbook');
     } else {
       setShowExtendedForm(true);
       setShowNewsletterForm(false);
-      setShowAllSetMessage(false);
-      setSuccessMessage('');
     }
   };
 
   const handleNewsletter = () => {
+    setSuccessMessage('');
+    setShowAllSetMessage(false);
+    
     if (userEmail) {
       handleInterestSubmit('newsletter');
     } else {
       setShowNewsletterForm(true);
       setShowExtendedForm(false);
-      setShowAllSetMessage(false);
-      setSuccessMessage('');
     }
   };
 
   const handleAllSet = () => {
-    setShowAllSetMessage(true);
+    setSuccessMessage('');
     setShowExtendedForm(false);
     setShowNewsletterForm(false);
-    setSuccessMessage('');
+    setShowAllSetMessage(true);
+    
     if (userEmail) {
       handleInterestSubmit('complete_satisfied');
     }
