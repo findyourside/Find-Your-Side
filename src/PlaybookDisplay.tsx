@@ -3,8 +3,7 @@ import jsPDF from 'jspdf';
 import { ChevronLeft, Download, Mail, CheckCircle } from 'lucide-react';
 import { supabase } from './lib/supabase';
 import { analytics } from './lib/analytics';
-import FeatureValidation from './FeatureValidation';
-import InterestCapture from './InterestCapture';
+import UnifiedFeedback from './UnifiedFeedback';
 import EmailPreviewModal from './EmailPreviewModal';
 
 interface DailyTask {
@@ -161,7 +160,7 @@ export default function PlaybookDisplay({ playbook, onBack, userEmail, timeCommi
           <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
             <div className="flex items-center text-green-800">
               <CheckCircle className="w-5 h-5 mr-2" />
-              <span className="font-semibold">Playbook sent to {userEmail}!</span>
+              <span className="font-semibold">Action plan sent to {userEmail}!</span>
             </div>
           </div>
         )}
@@ -169,7 +168,7 @@ export default function PlaybookDisplay({ playbook, onBack, userEmail, timeCommi
         <div className="bg-white rounded-2xl shadow-lg p-8 lg:p-12 mb-8">
           <div className="text-center mb-8">
             <h1 className="text-4xl font-bold text-gray-900 mb-4">
-              Your 4-Week Launch Playbook
+              Your 4-Week Action Plan
             </h1>
             <h2 className="text-2xl font-semibold text-indigo-600 mb-4">
               {playbook.businessName}
@@ -185,7 +184,7 @@ export default function PlaybookDisplay({ playbook, onBack, userEmail, timeCommi
               className="flex items-center justify-center px-6 py-3 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 transition-all shadow-md hover:shadow-lg"
             >
               <Download className="w-5 h-5 mr-2" />
-              Download Playbook
+              Download Plan
             </button>
             <button
               onClick={() => setShowEmailPreview(true)}
@@ -193,7 +192,7 @@ export default function PlaybookDisplay({ playbook, onBack, userEmail, timeCommi
               className="flex items-center justify-center px-6 py-3 border-2 border-indigo-600 text-indigo-600 font-semibold rounded-lg hover:bg-indigo-50 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Mail className="w-5 h-5 mr-2" />
-              {isSendingEmail ? 'Sending...' : 'Email Me This Playbook'}
+              {isSendingEmail ? 'Sending...' : 'Email Me This Plan'}
             </button>
           </div>
 
@@ -210,8 +209,7 @@ export default function PlaybookDisplay({ playbook, onBack, userEmail, timeCommi
           )}
         </div>
 
-        <InterestCapture userEmail={userEmail} />
-        <FeatureValidation userEmail={userEmail} />
+        <UnifiedFeedback userEmail={userEmail} />
       </div>
     </div>
   );
