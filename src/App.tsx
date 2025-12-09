@@ -680,4 +680,9 @@ function App() {
               </div>
 
               <div className="text-center mt-6 p-4 bg-indigo-50 rounded-lg">
-                <p className="text-sm text-gray
+                <p className="text-sm text-gray-700">+ Week 3: Customer Acquisition & Week 4: First Sales</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
