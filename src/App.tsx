@@ -96,30 +96,14 @@ function App() {
     setCurrentView('generatingIdeas');
     setError(null);
 
-    console.log('Starting business ideas generation...');
-    console.log('Quiz data:', data);
-
-    const startTime = Date.now();
-
     try {
-      const url = '/api/generate-ideas';
-      console.log('Calling API:', url);
-
-      const response = await fetch(url, {
+      const response = await fetch('/api/generate-ideas', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ quizData: data }),
       });
 
-      const elapsedTime = Date.now() - startTime;
-      if (elapsedTime > 30000) {
-        console.log('High traffic - request was queued');
-      }
-
-      console.log('Response status:', response.status);
-
       const result = await response.json();
-      console.log('API Response:', result);
 
       if (!response.ok) {
         if (result.blocked && result.reason === 'monthly_limit') {
@@ -135,12 +119,10 @@ function App() {
           setCurrentView('home');
           return;
         }
-        console.error('API Error:', result);
         throw new Error(result.error || `API returned status ${response.status}`);
       }
 
       if (!result.ideas || !Array.isArray(result.ideas)) {
-        console.error('Invalid response format:', result);
         throw new Error('Invalid response format from API');
       }
 
@@ -159,7 +141,6 @@ function App() {
       setTimeout(() => setSuccessMessage(null), 5000);
       setCurrentView('showingIdeas');
     } catch (err) {
-      console.error('Error generating ideas:', err);
       const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
       setError(`Failed to generate business ideas: ${errorMessage}`);
       setCurrentView('home');
@@ -171,16 +152,8 @@ function App() {
     setCurrentView('generatingPlaybook');
     setError(null);
 
-    console.log('Starting action plan generation from idea form...');
-    console.log('Idea form data:', data);
-
-    const startTime = Date.now();
-
     try {
-      const url = '/api/generate-playbook';
-      console.log('Calling API:', url);
-
-      const response = await fetch(url, {
+      const response = await fetch('/api/generate-playbook', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -189,15 +162,7 @@ function App() {
         }),
       });
 
-      const elapsedTime = Date.now() - startTime;
-      if (elapsedTime > 30000) {
-        console.log('High traffic - request was queued');
-      }
-
-      console.log('Response status:', response.status);
-
       const result = await response.json();
-      console.log('API Response:', result);
 
       if (!response.ok) {
         if (result.blocked && result.reason === 'monthly_limit') {
@@ -214,12 +179,10 @@ function App() {
           setCurrentView('home');
           return;
         }
-        console.error('API Error:', result);
         throw new Error(result.error || `API returned status ${response.status}`);
       }
 
       if (!result.playbook) {
-        console.error('Invalid response format:', result);
         throw new Error('Invalid response format from API');
       }
 
@@ -238,7 +201,6 @@ function App() {
       setTimeout(() => setSuccessMessage(null), 6000);
       setCurrentView('showingPlaybook');
     } catch (err) {
-      console.error('Error generating action plan:', err);
       const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
       setError(`Failed to generate action plan: ${errorMessage}`);
       setCurrentView('ideaForm');
@@ -254,17 +216,8 @@ function App() {
     setCurrentView('generatingPlaybook');
     setError(null);
 
-    console.log('Starting action plan generation from quiz...');
-    console.log('Selected idea:', idea);
-    console.log('Quiz data:', quizData);
-
-    const startTime = Date.now();
-
     try {
-      const url = '/api/generate-playbook';
-      console.log('Calling API:', url);
-
-      const response = await fetch(url, {
+      const response = await fetch('/api/generate-playbook', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -276,15 +229,7 @@ function App() {
         }),
       });
 
-      const elapsedTime = Date.now() - startTime;
-      if (elapsedTime > 30000) {
-        console.log('High traffic - request was queued');
-      }
-
-      console.log('Response status:', response.status);
-
       const result = await response.json();
-      console.log('API Response:', result);
 
       if (!response.ok) {
         if (result.blocked && result.reason === 'monthly_limit') {
@@ -301,12 +246,10 @@ function App() {
           setCurrentView('showingIdeas');
           return;
         }
-        console.error('API Error:', result);
         throw new Error(result.error || `API returned status ${response.status}`);
       }
 
       if (!result.playbook) {
-        console.error('Invalid response format:', result);
         throw new Error('Invalid response format from API');
       }
 
@@ -325,7 +268,6 @@ function App() {
       setTimeout(() => setSuccessMessage(null), 6000);
       setCurrentView('showingPlaybook');
     } catch (err) {
-      console.error('Error generating action plan:', err);
       const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
       setError(`Failed to generate action plan: ${errorMessage}`);
       setCurrentView('showingIdeas');
@@ -385,15 +327,9 @@ function App() {
       {showIdeaLimitModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">
-              You've generated your 2 idea sets!
-            </h2>
-            <p className="text-gray-600 mb-4">
-              That's 10 personalized ideas total! Want to generate action plans for your favorite ideas?
-            </p>
-            <p className="text-gray-700 font-semibold mb-6">
-              You have {playbooksRemaining} action plan generations remaining.
-            </p>
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">You've generated your 2 idea sets!</h2>
+            <p className="text-gray-600 mb-4">That's 10 personalized ideas total! Want to generate action plans for your favorite ideas?</p>
+            <p className="text-gray-700 font-semibold mb-6">You have {playbooksRemaining} action plan generations remaining.</p>
             <button
               onClick={() => setShowIdeaLimitModal(false)}
               className="w-full px-6 py-3 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 transition-all"
@@ -426,28 +362,16 @@ function App() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <div className="flex items-center justify-center" style={{ marginBottom: '20px' }}>
-              <img
-                src="/Find your side.svg"
-                alt="Find Your Side - Idea to Execution"
-                className="w-[240px] sm:w-[340px] h-auto"
-              />
+              <img src="/Find your side.svg" alt="Find Your Side - Idea to Execution" className="w-[240px] sm:w-[340px] h-auto" />
             </div>
 
             <h1 className="font-bold text-white tracking-tight" style={{ marginBottom: '12px', fontSize: '48px' }}>
-              <style>{`
-                @media (max-width: 640px) {
-                  h1 { font-size: 36px !important; }
-                }
-              `}</style>
+              <style>{`@media (max-width: 640px) { h1 { font-size: 36px !important; } }`}</style>
               Turn Your Side Business<br />Dream Into Reality
             </h1>
 
             <p className="mx-auto" style={{ color: '#CBD5E1', marginBottom: '24px', maxWidth: '700px', fontSize: '20px' }}>
-              <style>{`
-                @media (max-width: 640px) {
-                  p { font-size: 18px !important; }
-                }
-              `}</style>
+              <style>{`@media (max-width: 640px) { p { font-size: 18px !important; } }`}</style>
               Get a personalized 4-week action plan - whether you're exploring ideas or ready to execute.
             </p>
 
@@ -456,12 +380,7 @@ function App() {
                 <button
                   onClick={handleStartQuiz}
                   className="w-full sm:w-auto px-10 text-lg font-bold transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
-                  style={{
-                    backgroundColor: '#4F46E5',
-                    color: '#FFFFFF',
-                    height: '56px',
-                    borderRadius: '12px'
-                  }}
+                  style={{ backgroundColor: '#4F46E5', color: '#FFFFFF', height: '56px', borderRadius: '12px' }}
                   onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#4338CA'}
                   onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#4F46E5'}
                 >
@@ -475,13 +394,7 @@ function App() {
                     handleStartIdeaForm();
                   }}
                   className="w-full sm:w-auto px-10 text-lg font-bold transition-all cursor-pointer hover:bg-white hover:bg-opacity-10"
-                  style={{
-                    backgroundColor: 'transparent',
-                    color: '#FFFFFF',
-                    border: '2px solid #FFFFFF',
-                    height: '56px',
-                    borderRadius: '12px'
-                  }}
+                  style={{ backgroundColor: 'transparent', color: '#FFFFFF', border: '2px solid #FFFFFF', height: '56px', borderRadius: '12px' }}
                 >
                   I Have An Idea
                 </button>
@@ -496,12 +409,8 @@ function App() {
 
       <section className="bg-gray-50 py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-4xl sm:text-5xl font-bold text-center text-gray-900 mb-3">
-            How It Works
-          </h2>
-          <p className="text-xl text-gray-600 text-center mb-12">
-            Choose your path to launch
-          </p>
+          <h2 className="text-4xl sm:text-5xl font-bold text-center text-gray-900 mb-3">How It Works</h2>
+          <p className="text-xl text-gray-600 text-center mb-12">Choose your path to launch</p>
 
           <div className="grid md:grid-cols-2 gap-8 lg:gap-12">
             <div className="bg-white rounded-2xl shadow-lg p-8 lg:p-10">
@@ -509,51 +418,25 @@ function App() {
                 <div className="w-14 h-14 rounded-xl flex items-center justify-center" style={{ backgroundColor: '#EEF2FF' }}>
                   <Lightbulb className="w-7 h-7" style={{ color: '#4F46E5' }} />
                 </div>
-                <h3 className="ml-4 text-2xl font-bold text-gray-900">
-                  Finding Your Idea
-                </h3>
+                <h3 className="ml-4 text-2xl font-bold text-gray-900">Finding Your Idea</h3>
               </div>
-
               <div className="space-y-6">
-                <div className="flex">
-                  <div className="flex-shrink-0 w-10 h-10 text-white rounded-full flex items-center justify-center font-bold" style={{ backgroundColor: '#4F46E5' }}>
-                    1
+                {[
+                  { num: '1', title: 'Answer 6 questions', desc: 'Share your skills and goals with us' },
+                  { num: '2', title: 'Get 5 AI-matched ideas', desc: 'Receive personalized business suggestions' },
+                  { num: '3', title: 'Pick your favorite', desc: 'Choose the idea that excites you most' },
+                  { num: '4', title: 'Get your action plan', desc: 'Receive your personalized 4-week action plan' },
+                ].map((step) => (
+                  <div key={step.num} className="flex">
+                    <div className="flex-shrink-0 w-10 h-10 text-white rounded-full flex items-center justify-center font-bold" style={{ backgroundColor: '#4F46E5' }}>
+                      {step.num}
+                    </div>
+                    <div className="ml-4">
+                      <h4 className="font-semibold text-gray-900 mb-1">{step.title}</h4>
+                      <p className="text-gray-600">{step.desc}</p>
+                    </div>
                   </div>
-                  <div className="ml-4">
-                    <h4 className="font-semibold text-gray-900 mb-1">Answer 6 questions</h4>
-                    <p className="text-gray-600">Share your skills and goals with us</p>
-                  </div>
-                </div>
-
-                <div className="flex">
-                  <div className="flex-shrink-0 w-10 h-10 text-white rounded-full flex items-center justify-center font-bold" style={{ backgroundColor: '#4F46E5' }}>
-                    2
-                  </div>
-                  <div className="ml-4">
-                    <h4 className="font-semibold text-gray-900 mb-1">Get 5 AI-matched ideas</h4>
-                    <p className="text-gray-600">Receive personalized business suggestions</p>
-                  </div>
-                </div>
-
-                <div className="flex">
-                  <div className="flex-shrink-0 w-10 h-10 text-white rounded-full flex items-center justify-center font-bold" style={{ backgroundColor: '#4F46E5' }}>
-                    3
-                  </div>
-                  <div className="ml-4">
-                    <h4 className="font-semibold text-gray-900 mb-1">Pick your favorite</h4>
-                    <p className="text-gray-600">Choose the idea that excites you most</p>
-                  </div>
-                </div>
-
-                <div className="flex">
-                  <div className="flex-shrink-0 w-10 h-10 text-white rounded-full flex items-center justify-center font-bold" style={{ backgroundColor: '#4F46E5' }}>
-                    4
-                  </div>
-                  <div className="ml-4">
-                    <h4 className="font-semibold text-gray-900 mb-1">Get your action plan</h4>
-                    <p className="text-gray-600">Receive your personalized 4-week action plan</p>
-                  </div>
-                </div>
+                ))}
               </div>
             </div>
 
@@ -562,51 +445,25 @@ function App() {
                 <div className="w-14 h-14 rounded-xl flex items-center justify-center" style={{ backgroundColor: '#EEF2FF' }}>
                   <Target className="w-7 h-7" style={{ color: '#4F46E5' }} />
                 </div>
-                <h3 className="ml-4 text-2xl font-bold text-gray-900">
-                  Already Have an Idea
-                </h3>
+                <h3 className="ml-4 text-2xl font-bold text-gray-900">Already Have an Idea</h3>
               </div>
-
               <div className="space-y-6">
-                <div className="flex">
-                  <div className="flex-shrink-0 w-10 h-10 text-white rounded-full flex items-center justify-center font-bold" style={{ backgroundColor: '#4F46E5' }}>
-                    1
+                {[
+                  { num: '1', title: 'Tell us your idea', desc: 'Describe your business concept in a few sentences' },
+                  { num: '2', title: 'Share your constraints', desc: 'Let us know your available time and experience level' },
+                  { num: '3', title: 'Get your action plan', desc: 'Receive your personalized 4-week action plan' },
+                  { num: '4', title: 'Start building', desc: 'Follow your customized roadmap to launch' },
+                ].map((step) => (
+                  <div key={step.num} className="flex">
+                    <div className="flex-shrink-0 w-10 h-10 text-white rounded-full flex items-center justify-center font-bold" style={{ backgroundColor: '#4F46E5' }}>
+                      {step.num}
+                    </div>
+                    <div className="ml-4">
+                      <h4 className="font-semibold text-gray-900 mb-1">{step.title}</h4>
+                      <p className="text-gray-600">{step.desc}</p>
+                    </div>
                   </div>
-                  <div className="ml-4">
-                    <h4 className="font-semibold text-gray-900 mb-1">Tell us your idea</h4>
-                    <p className="text-gray-600">Describe your business concept in a few sentences</p>
-                  </div>
-                </div>
-
-                <div className="flex">
-                  <div className="flex-shrink-0 w-10 h-10 text-white rounded-full flex items-center justify-center font-bold" style={{ backgroundColor: '#4F46E5' }}>
-                    2
-                  </div>
-                  <div className="ml-4">
-                    <h4 className="font-semibold text-gray-900 mb-1">Share your constraints</h4>
-                    <p className="text-gray-600">Let us know your available time and experience level</p>
-                  </div>
-                </div>
-
-                <div className="flex">
-                  <div className="flex-shrink-0 w-10 h-10 text-white rounded-full flex items-center justify-center font-bold" style={{ backgroundColor: '#4F46E5' }}>
-                    3
-                  </div>
-                  <div className="ml-4">
-                    <h4 className="font-semibold text-gray-900 mb-1">Get your action plan</h4>
-                    <p className="text-gray-600">Receive your personalized 4-week action plan</p>
-                  </div>
-                </div>
-
-                <div className="flex">
-                  <div className="flex-shrink-0 w-10 h-10 text-white rounded-full flex items-center justify-center font-bold" style={{ backgroundColor: '#4F46E5' }}>
-                    4
-                  </div>
-                  <div className="ml-4">
-                    <h4 className="font-semibold text-gray-900 mb-1">Start building</h4>
-                    <p className="text-gray-600">Follow your customized roadmap to launch</p>
-                  </div>
-                </div>
+                ))}
               </div>
             </div>
           </div>
@@ -615,12 +472,8 @@ function App() {
 
       <section className="py-12 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-4xl sm:text-5xl font-bold text-center text-gray-900 mb-3">
-            See What You'll Get
-          </h2>
-          <p className="text-xl text-gray-600 text-center mb-10">
-            A sample 4-week action plan
-          </p>
+          <h2 className="text-4xl sm:text-5xl font-bold text-center text-gray-900 mb-3">See What You'll Get</h2>
+          <p className="text-xl text-gray-600 text-center mb-10">A sample 4-week action plan</p>
           
           <div className="bg-white rounded-2xl shadow-lg p-8 max-w-4xl mx-auto">
             <h3 className="text-2xl font-bold text-gray-900 mb-4">Sample: Custom Furniture Refinishing Business</h3>
@@ -630,52 +483,36 @@ function App() {
               <div className="border-2 border-indigo-200 rounded-lg p-6">
                 <h4 className="text-lg font-bold text-gray-900 mb-4">Week 1: Foundation & Skills</h4>
                 <div className="space-y-3">
-                  <div className="pl-4 border-l-2 border-indigo-400">
-                    <p className="font-semibold text-gray-900">Day 1: Learn restoration techniques</p>
-                    <p className="text-sm text-gray-600">Watch tutorials on furniture stripping, sanding, and refinishing. Practice on a test piece.</p>
-                  </div>
-                  <div className="pl-4 border-l-2 border-indigo-400">
-                    <p className="font-semibold text-gray-900">Day 2: Source your first pieces</p>
-                    <p className="text-sm text-gray-600">Visit thrift stores and garage sales. Find 3 pieces to refinish for your portfolio.</p>
-                  </div>
-                  <div className="pl-4 border-l-2 border-indigo-400">
-                    <p className="font-semibold text-gray-900">Day 3: Buy tools and supplies</p>
-                    <p className="text-sm text-gray-600">Purchase sandpaper, stain, polyurethane, brushes. Budget: $150-200.</p>
-                  </div>
-                  <div className="pl-4 border-l-2 border-indigo-400">
-                    <p className="font-semibold text-gray-900">Day 4: Complete first refinish</p>
-                    <p className="text-sm text-gray-600">Refinish your first piece start to finish. Document with before/after photos.</p>
-                  </div>
-                  <div className="pl-4 border-l-2 border-indigo-400">
-                    <p className="font-semibold text-gray-900">Day 5: Set up social media</p>
-                    <p className="text-sm text-gray-600">Create Instagram and Facebook accounts. Post your first before/after transformation.</p>
-                  </div>
+                  {[
+                    { day: 1, title: 'Learn restoration techniques', desc: 'Watch tutorials on furniture stripping, sanding, and refinishing. Practice on a test piece.' },
+                    { day: 2, title: 'Source your first pieces', desc: 'Visit thrift stores and garage sales. Find 3 pieces to refinish for your portfolio.' },
+                    { day: 3, title: 'Buy tools and supplies', desc: 'Purchase sandpaper, stain, polyurethane, brushes. Budget: $150-200.' },
+                    { day: 4, title: 'Complete first refinish', desc: 'Refinish your first piece start to finish. Document with before/after photos.' },
+                    { day: 5, title: 'Set up social media', desc: 'Create Instagram and Facebook accounts. Post your first before/after transformation.' },
+                  ].map((task) => (
+                    <div key={task.day} className="pl-4 border-l-2 border-indigo-400">
+                      <p className="font-semibold text-gray-900">Day {task.day}: {task.title}</p>
+                      <p className="text-sm text-gray-600">{task.desc}</p>
+                    </div>
+                  ))}
                 </div>
               </div>
 
               <div className="border-2 border-indigo-200 rounded-lg p-6">
                 <h4 className="text-lg font-bold text-gray-900 mb-4">Week 2: Build Portfolio & Pricing</h4>
                 <div className="space-y-3">
-                  <div className="pl-4 border-l-2 border-indigo-400">
-                    <p className="font-semibold text-gray-900">Day 6: Complete pieces 2 & 3</p>
-                    <p className="text-sm text-gray-600">Finish two more pieces for portfolio. Vary styles (modern, rustic, vintage).</p>
-                  </div>
-                  <div className="pl-4 border-l-2 border-indigo-400">
-                    <p className="font-semibold text-gray-900">Day 7: Research pricing</p>
-                    <p className="text-sm text-gray-600">Check Etsy, Facebook Marketplace, local competitors. Set your pricing structure.</p>
-                  </div>
-                  <div className="pl-4 border-l-2 border-indigo-400">
-                    <p className="font-semibold text-gray-900">Day 8: Create portfolio page</p>
-                    <p className="text-sm text-gray-600">Build simple website on Wix or Squarespace showcasing your 3 completed pieces.</p>
-                  </div>
-                  <div className="pl-4 border-l-2 border-indigo-400">
-                    <p className="font-semibold text-gray-900">Day 9: List first piece for sale</p>
-                    <p className="text-sm text-gray-600">Post your best piece on Facebook Marketplace and Craigslist with pricing.</p>
-                  </div>
-                  <div className="pl-4 border-l-2 border-indigo-400">
-                    <p className="font-semibold text-gray-900">Day 10: Network locally</p>
-                    <p className="text-sm text-gray-600">Visit 3 antique shops or consignment stores. Offer to refinish pieces on commission.</p>
-                  </div>
+                  {[
+                    { day: 6, title: 'Complete pieces 2 & 3', desc: 'Finish two more pieces for portfolio. Vary styles (modern, rustic, vintage).' },
+                    { day: 7, title: 'Research pricing', desc: 'Check Etsy, Facebook Marketplace, local competitors. Set your pricing structure.' },
+                    { day: 8, title: 'Create portfolio page', desc: 'Build simple website on Wix or Squarespace showcasing your 3 completed pieces.' },
+                    { day: 9, title: 'List first piece for sale', desc: 'Post your best piece on Facebook Marketplace and Craigslist with pricing.' },
+                    { day: 10, title: 'Network locally', desc: 'Visit 3 antique shops or consignment stores. Offer to refinish pieces on commission.' },
+                  ].map((task) => (
+                    <div key={task.day} className="pl-4 border-l-2 border-indigo-400">
+                      <p className="font-semibold text-gray-900">Day {task.day}: {task.title}</p>
+                      <p className="text-sm text-gray-600">{task.desc}</p>
+                    </div>
+                  ))}
                 </div>
               </div>
 
@@ -686,3 +523,67 @@ function App() {
           </div>
         </div>
       </section>
+
+      <FAQ />
+    </div>
+  );
+}
+
+function GeneratingIdeasView() {
+  const [elapsedTime, setElapsedTime] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setElapsedTime(prev => prev + 1);
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8">
+        <div className="flex justify-center mb-6">
+          <div className="relative w-12 h-12">
+            <div className="absolute inset-0 rounded-full border-4 border-indigo-200"></div>
+            <div className="absolute inset-0 rounded-full border-4 border-transparent border-t-indigo-600 animate-spin" style={{ animation: 'spin 1s linear infinite' }}></div>
+          </div>
+        </div>
+        <h2 className="text-2xl font-bold text-center text-gray-900 mb-2">Finding your perfect ideas</h2>
+        <p className="text-center text-gray-600">Your ideas are being created...</p>
+        <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+      </div>
+    </div>
+  );
+}
+
+function GeneratingPlaybookView() {
+  const [elapsedTime, setElapsedTime] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setElapsedTime(prev => prev + 1);
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8">
+        <div className="flex justify-center mb-6">
+          <div className="relative w-12 h-12">
+            <div className="absolute inset-0 rounded-full border-4 border-indigo-200"></div>
+            <div className="absolute inset-0 rounded-full border-4 border-transparent border-t-indigo-600 animate-spin" style={{ animation: 'spin 1s linear infinite' }}></div>
+          </div>
+        </div>
+        <h2 className="text-2xl font-bold text-center text-gray-900 mb-2">Creating your action plan</h2>
+        <p className="text-center text-gray-600 mb-4">This won't take long.</p>
+        {elapsedTime > 15 && <p className="text-center text-sm text-gray-500">Still working... ({elapsedTime}s)</p>}
+        <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+      </div>
+    </div>
+  );
+}
+
+export default App;
