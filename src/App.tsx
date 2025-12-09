@@ -153,7 +153,7 @@ function App() {
       if (newIdeaSetsRemaining === 1) {
         setSuccessMessage('✅ Ideas generated! You have 1 more idea set remaining.');
       } else if (newIdeaSetsRemaining === 0) {
-        setSuccessMessage('✅ This is your final idea set. Select your best idea for a playbook!');
+        setSuccessMessage('✅ This is your final idea set. Select your best idea for an action plan!');
       }
 
       setTimeout(() => setSuccessMessage(null), 5000);
@@ -171,7 +171,7 @@ function App() {
     setCurrentView('generatingPlaybook');
     setError(null);
 
-    console.log('Starting playbook generation from idea form...');
+    console.log('Starting action plan generation from idea form...');
     console.log('Idea form data:', data);
 
     const startTime = Date.now();
@@ -238,7 +238,7 @@ function App() {
       setTimeout(() => setSuccessMessage(null), 6000);
       setCurrentView('showingPlaybook');
     } catch (err) {
-      console.error('Error generating playbook:', err);
+      console.error('Error generating action plan:', err);
       const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
       setError(`Failed to generate action plan: ${errorMessage}`);
       setCurrentView('ideaForm');
@@ -254,7 +254,7 @@ function App() {
     setCurrentView('generatingPlaybook');
     setError(null);
 
-    console.log('Starting playbook generation from quiz...');
+    console.log('Starting action plan generation from quiz...');
     console.log('Selected idea:', idea);
     console.log('Quiz data:', quizData);
 
@@ -325,7 +325,7 @@ function App() {
       setTimeout(() => setSuccessMessage(null), 6000);
       setCurrentView('showingPlaybook');
     } catch (err) {
-      console.error('Error generating playbook:', err);
+      console.error('Error generating action plan:', err);
       const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
       setError(`Failed to generate action plan: ${errorMessage}`);
       setCurrentView('showingIdeas');
@@ -551,7 +551,7 @@ function App() {
                   </div>
                   <div className="ml-4">
                     <h4 className="font-semibold text-gray-900 mb-1">Get your action plan</h4>
-                    <p className="text-gray-600">Receive your personalized 4-week plan</p>
+                    <p className="text-gray-600">Receive your personalized 4-week action plan</p>
                   </div>
                 </div>
               </div>
@@ -594,7 +594,7 @@ function App() {
                   </div>
                   <div className="ml-4">
                     <h4 className="font-semibold text-gray-900 mb-1">Get your action plan</h4>
-                    <p className="text-gray-600">Receive your personalized 4-week plan</p>
+                    <p className="text-gray-600">Receive your personalized 4-week action plan</p>
                   </div>
                 </div>
 
@@ -682,3 +682,85 @@ function App() {
               <div className="text-center mt-6 p-4 bg-indigo-50 rounded-lg">
                 <p className="text-sm text-gray-700">+ Week 3: Customer Acquisition & Week 4: First Sales</p>
               </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <FAQ />
+      <WaitlistSignup />
+    </div>
+  );
+}
+
+function GeneratingIdeasView() {
+  const [elapsedTime, setElapsedTime] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setElapsedTime(prev => prev + 1);
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8">
+        <div className="flex justify-center mb-6">
+          <div className="relative w-12 h-12">
+            <div className="absolute inset-0 rounded-full border-4 border-indigo-200"></div>
+            <div
+              className="absolute inset-0 rounded-full border-4 border-transparent border-t-indigo-600 animate-spin"
+              style={{ animation: 'spin 1s linear infinite' }}
+            ></div>
+          </div>
+        </div>
+        <h2 className="text-2xl font-bold text-center text-gray-900 mb-2">
+          Finding your perfect ideas
+        </h2>
+        <p className="text-center text-gray-600">
+          {elapsedTime > 25 ? 'This is taking longer than usual. ' : ''}Your ideas are being created...
+        </p>
+        <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+      </div>
+    </div>
+  );
+}
+
+function GeneratingPlaybookView() {
+  const [elapsedTime, setElapsedTime] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setElapsedTime(prev => prev + 1);
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8">
+        <div className="flex justify-center mb-6">
+          <div className="relative w-12 h-12">
+            <div className="absolute inset-0 rounded-full border-4 border-indigo-200"></div>
+            <div
+              className="absolute inset-0 rounded-full border-4 border-transparent border-t-indigo-600 animate-spin"
+              style={{ animation: 'spin 1s linear infinite' }}
+            ></div>
+          </div>
+        </div>
+        <h2 className="text-2xl font-bold text-center text-gray-900 mb-2">
+          Creating your action plan
+        </h2>
+        <p className="text-center text-gray-600">
+          Your playbook is being created...
+        </p>
+        <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+      </div>
+    </div>
+  );
+}
+
+export default App;
