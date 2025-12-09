@@ -40,21 +40,21 @@ export default async function handler(req, res) {
   const prompt = `Create a 4-week action plan for: ${businessIdea}
 Time: ${timeCommitment}
 
-4 weeks, 5 tasks/week (20 days). Each task: day, title, description (50 words max), time estimate, 2-3 resources.
+4 weeks, 5 tasks/week (20 days). Be concise.
 
 Return JSON only:
 {
   "businessName": "Name",
-  "overview": "1-2 sentences about this launch strategy",
+  "overview": "1 sentence about launch strategy",
   "weeks": [
     {
       "week": 1,
-      "title": "Week title",
+      "title": "Title",
       "focusArea": "Area",
       "successMetric": "Metric",
       "totalTime": "Hours",
       "dailyTasks": [
-        {"day": 1, "title": "Task", "description": "50 words max", "timeEstimate": "X hours", "resources": ["R1", "R2", "R3"]}
+        {"day": 1, "title": "Task", "description": "30 words max", "timeEstimate": "X hrs", "resources": ["R1", "R2"]}
       ]
     }
   ]
@@ -73,7 +73,7 @@ Return JSON only:
       },
       body: JSON.stringify({
         model: 'claude-sonnet-4-20250514',
-        max_tokens: 3000,
+        max_tokens: 2000,
         messages: [{ role: 'user', content: prompt }],
       }),
       signal: controller.signal,
