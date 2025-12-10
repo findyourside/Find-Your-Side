@@ -3,7 +3,8 @@ import jsPDF from 'jspdf';
 import { ChevronLeft, Download, Mail, CheckCircle } from 'lucide-react';
 import { supabase } from './lib/supabase';
 import { analytics } from './lib/analytics';
-import UnifiedFeedback from './UnifiedFeedback';
+import InterestCapture from './InterestCapture';
+import FeatureValidation from './FeatureValidation';
 import EmailPreviewModal from './EmailPreviewModal';
 
 interface DailyTask {
@@ -209,7 +210,8 @@ export default function PlaybookDisplay({ playbook, onBack, userEmail, timeCommi
           )}
         </div>
 
-        <UnifiedFeedback userEmail={userEmail} />
+        <InterestCapture userEmail={userEmail} />
+        <FeatureValidation userEmail={userEmail} />
       </div>
     </div>
   );
