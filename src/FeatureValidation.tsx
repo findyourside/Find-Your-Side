@@ -4,7 +4,6 @@ import { analytics } from './lib/analytics';
 
 const FEATURE_OPTIONS = [
   'Extended action plan (30-60 days)',
-  'Weekly tips and resources via email',
   'Community of other entrepreneurs',
   'One-on-one coaching or expert support',
   'Monthly webinars featuring entrepreneurs and thought leaders',
