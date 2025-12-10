@@ -4,11 +4,10 @@ import { analytics } from './lib/analytics';
 
 const FEATURE_OPTIONS = [
   'Extended action plan (30-60 days)',
-  'Weekly check-in emails to stay accountable',
-  'Community of other builders',
+  'Weekly tips and resources via email',
+  'Community of other entrepreneurs',
   'One-on-one coaching or expert support',
-  'Templates and resources (contracts, pricing sheets, etc.)',
-  'Industry-specific action plans',
+  'Monthly webinars featuring entrepreneurs and thought leaders',
   'Progress tracking dashboard'
 ];
 
@@ -77,7 +76,7 @@ export default function FeatureValidation({ userEmail }: FeatureValidationProps)
     <div className="max-w-4xl mx-auto px-4 py-12 border-t border-gray-200">
       <div className="text-center mb-8">
         <h2 className="text-3xl font-bold text-gray-900 mb-3">
-          What features would help you build faster?
+          What features would help you launch faster?
         </h2>
         <p className="text-lg text-gray-600">
           Your feedback helps us build what you need.
@@ -106,7 +105,7 @@ export default function FeatureValidation({ userEmail }: FeatureValidationProps)
 
         <div className="mb-6">
           <label className="block text-gray-700 font-medium mb-2">
-            Anything else you'd like to share?
+            Anything else you'd like to share? Let us know how we can support you.
           </label>
           <textarea
             value={customFeedback}
