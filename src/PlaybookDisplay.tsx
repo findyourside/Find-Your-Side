@@ -3,7 +3,6 @@ import jsPDF from 'jspdf';
 import { ChevronLeft, Download, Mail, CheckCircle } from 'lucide-react';
 import { supabase } from './lib/supabase';
 import { analytics } from './lib/analytics';
-import InterestCapture from './InterestCapture';
 import FeatureValidation from './FeatureValidation';
 import EmailPreviewModal from './EmailPreviewModal';
 
@@ -74,13 +73,13 @@ export default function PlaybookDisplay({ playbook, onBack, userEmail, timeCommi
       y += 5;
     });
     
-    doc.save(playbook.businessName + '-Playbook.pdf');
+    doc.save(playbook.businessName + '-Action-Plan.pdf');
     analytics.playbookDownloaded();
   };
 
   const handleSendEmail = async () => {
     if (!userEmail) {
-      alert('Email address not found. Please download the playbook instead.');
+      alert('Email address not found. Please download the action plan instead.');
       return;
     }
 
@@ -210,7 +209,6 @@ export default function PlaybookDisplay({ playbook, onBack, userEmail, timeCommi
           )}
         </div>
 
-        <InterestCapture userEmail={userEmail} />
         <FeatureValidation userEmail={userEmail} />
       </div>
     </div>
