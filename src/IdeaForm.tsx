@@ -9,6 +9,7 @@ interface IdeaFormData {
   problemSolving: string;
   targetCustomer: string;
   timeCommitment: string;
+  timeCommitmentOther: string;
   skillsExperience: string;
   email: string;
 }
@@ -24,6 +25,7 @@ interface ValidationErrors {
   problemSolving?: string;
   targetCustomer?: string;
   timeCommitment?: string;
+  timeCommitmentOther?: string;
   skillsExperience?: string;
   email?: string;
 }
@@ -37,6 +39,7 @@ export default function IdeaForm({ onComplete, onBack }: IdeaFormProps) {
     problemSolving: '',
     targetCustomer: '',
     timeCommitment: '',
+    timeCommitmentOther: '',
     skillsExperience: '',
     email: '',
   });
@@ -72,6 +75,13 @@ export default function IdeaForm({ onComplete, onBack }: IdeaFormProps) {
       newErrors.timeCommitment = 'Please select your time commitment';
     }
 
+    if (formData.timeCommitment === 'Other' && !formData.timeCommitmentOther.trim()) {
+      newErrors.timeCommitmentOther = 'Please specify your availability';
+    }
+    if (formData.timeCommitmentOther.trim().length > 50) {
+      newErrors.timeCommitmentOther = 'Maximum 50 characters allowed';
+    }
+
     if (formData.skillsExperience.trim().length > 300) {
       newErrors.skillsExperience = 'Maximum 300 characters allowed';
     }
@@ -100,9 +110,13 @@ export default function IdeaForm({ onComplete, onBack }: IdeaFormProps) {
         ? formData.businessTypeOther
         : formData.businessType;
 
+      const timeCommitmentValue = formData.timeCommitment === 'Other'
+        ? formData.timeCommitmentOther
+        : formData.timeCommitment;
+
       const { error } = await supabase.from('idea_submissions').insert({
         business_idea: `Business Type: ${businessTypeValue}\nProblem: ${formData.problemSolving}\nTarget Customer: ${formData.targetCustomer}`,
-        time_commitment: formData.timeCommitment,
+        time_commitment: timeCommitmentValue,
         budget: null,
         skills_experience: formData.skillsExperience || null,
         email: formData.email,
@@ -124,6 +138,7 @@ export default function IdeaForm({ onComplete, onBack }: IdeaFormProps) {
   const problemCharCount = getCharacterCount(formData.problemSolving);
   const skillsCharCount = getCharacterCount(formData.skillsExperience);
   const otherTypeCharCount = getCharacterCount(formData.businessTypeOther);
+  const otherTimeCharCount = getCharacterCount(formData.timeCommitmentOther);
 
   return (
     <div className="min-h-screen bg-white">
@@ -155,7 +170,7 @@ export default function IdeaForm({ onComplete, onBack }: IdeaFormProps) {
             Tell Us About Your Business
           </h1>
           <p className="text-xl text-gray-600 mb-8">
-            Answer a few questions and we'll create your personalized 30-day launch plan.
+            Answer a few questions and we'll create your personalized 4-week action plan.
           </p>
 
           <form onSubmit={handleSubmit} className="space-y-6">
@@ -281,7 +296,7 @@ export default function IdeaForm({ onComplete, onBack }: IdeaFormProps) {
                 id="timeCommitment"
                 value={formData.timeCommitment}
                 onChange={(e) => {
-                  setFormData({ ...formData, timeCommitment: e.target.value });
+                  setFormData({ ...formData, timeCommitment: e.target.value, timeCommitmentOther: '' });
                   if (errors.timeCommitment) {
                     setErrors({ ...errors, timeCommitment: undefined });
                   }
@@ -291,21 +306,50 @@ export default function IdeaForm({ onComplete, onBack }: IdeaFormProps) {
                 }`}
               >
                 <option value="">Select time commitment</option>
-                <option value="5 hours/week">5 hours/week</option>
-                <option value="10 hours/week">10 hours/week</option>
+                <option value="2-5 hours/week">2-5 hours/week</option>
+                <option value="10+ hours/week">10+ hours/week</option>
                 <option value="15+ hours/week">15+ hours/week</option>
+                <option value="Other">Other</option>
               </select>
               {errors.timeCommitment && (
                 <p className="mt-2 text-sm text-red-600">{errors.timeCommitment}</p>
               )}
             </div>
 
+            {/* Field 4b: Other Time Commitment (conditional) */}
+            {formData.timeCommitment === 'Other' && (
+              <div>
+                <input
+                  type="text"
+                  value={formData.timeCommitmentOther}
+                  onChange={(e) => {
+                    if (e.target.value.length <= 50) {
+                      setFormData({ ...formData, timeCommitmentOther: e.target.value });
+                      if (errors.timeCommitmentOther) {
+                        setErrors({ ...errors, timeCommitmentOther: undefined });
+                      }
+                    }
+                  }}
+                  placeholder="Please specify your availability"
+                  maxLength={50}
+                  className={`w-full px-4 py-3 text-base border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent ${
+                    errors.timeCommitmentOther ? 'border-red-300' : 'border-gray-200'
+                  }`}
+                />
+                <div className="flex justify-between items-center mt-2">
+                  <span className={`text-sm ${errors.timeCommitmentOther ? 'text-red-600' : 'text-gray-500'}`}>
+                    {errors.timeCommitmentOther || `${otherTimeCharCount}/50 characters`}
+                  </span>
+                </div>
+              </div>
+            )}
+
             {/* Field 5: Skills/Experience */}
             <div>
               <label htmlFor="skillsExperience" className="block text-lg font-semibold text-gray-900 mb-1">
                 What skills or experience do you bring? <span className="text-gray-500 text-base font-normal">(Optional but helps us customize)</span>
               </label>
-              <p className="text-sm text-gray-500 mb-2">We'll tailor your playbook to leverage your strengths and skip what you already know</p>
+              <p className="text-sm text-gray-500 mb-2">We'll tailor your action plan to leverage your strengths and skip what you already know</p>
               <textarea
                 id="skillsExperience"
                 value={formData.skillsExperience}
@@ -333,7 +377,7 @@ export default function IdeaForm({ onComplete, onBack }: IdeaFormProps) {
             {/* Field 6: Email */}
             <div>
               <label htmlFor="email" className="block text-lg font-semibold text-gray-900 mb-2">
-                Email (to receive your playbook) <span className="text-red-500">*</span>
+                Email (to receive your action plan) <span className="text-red-500">*</span>
               </label>
               <input
                 type="email"
@@ -370,10 +414,10 @@ export default function IdeaForm({ onComplete, onBack }: IdeaFormProps) {
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                   </svg>
-                  Generating your playbook...
+                  Generating your action plan...
                 </span>
               ) : (
-                'Get My Playbook'
+                'Get My Action Plan'
               )}
             </button>
           </form>
