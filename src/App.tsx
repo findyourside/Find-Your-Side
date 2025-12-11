@@ -5,7 +5,6 @@ import IdeaForm from './IdeaForm';
 import BusinessIdeasResults from './BusinessIdeasResults';
 import PlaybookDisplay from './PlaybookDisplay';
 import FAQ from './FAQ';
-import Disclaimer from './Disclaimer';
 import WaitlistSignup from './WaitlistSignup';
 import { analytics } from './lib/analytics';
 
@@ -528,8 +527,6 @@ function App() {
 
       <FAQ />
 
-      <Disclaimer />
-
       <footer className="border-t border-gray-200" style={{ backgroundColor: '#1a1f3a' }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="text-center mb-3">
@@ -541,9 +538,9 @@ function App() {
           </div>
           <div className="text-center">
             <p className="text-gray-300 text-sm mb-2">
-              Privacy Policy | Terms | Cookie Policy |{' '}
+              Privacy Policy | Terms | Cookie Policy | Disclaimer |{' '}
               <a
-                href="mailto:contact@findyourside.com"
+                href="mailto:hello.findyourside@gmail.com"
                 className="text-indigo-400 hover:text-indigo-300 transition-colors"
               >
                 Contact
