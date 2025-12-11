@@ -50,13 +50,17 @@ export default function PlaybookDisplay({ playbook, onBack, userEmail, timeCommi
 
     // Title
     doc.setFontSize(20);
+    doc.setFont(undefined, 'bold');
     doc.text('Your 4-Week Action Plan', margin, y);
+    doc.setFont(undefined, 'normal');
     y += 10;
 
     // Business name
     doc.setFontSize(16);
     doc.setTextColor(79, 70, 229);
+    doc.setFont(undefined, 'bold');
     doc.text(playbook.businessName, margin, y);
+    doc.setFont(undefined, 'normal');
     doc.setTextColor(0, 0, 0);
     y += 8;
 
@@ -64,11 +68,16 @@ export default function PlaybookDisplay({ playbook, onBack, userEmail, timeCommi
     doc.setFontSize(10);
     const overviewLines = doc.splitTextToSize(playbook.overview, maxWidth);
     doc.text(overviewLines, margin, y);
-    y += overviewLines.length * 5 + 5;
+    y += overviewLines.length * 5 + 8;
 
     // Weeks
-    playbook.weeks.forEach((week) => {
-      if (y > pageHeight - 40) {
+    playbook.weeks.forEach((week, weekIndex) => {
+      if (weekIndex > 0) {
+        doc.addPage();
+        y = margin;
+      }
+
+      if (y > pageHeight - 100) {
         doc.addPage();
         y = margin;
       }
@@ -80,53 +89,83 @@ export default function PlaybookDisplay({ playbook, onBack, userEmail, timeCommi
       doc.setFont(undefined, 'normal');
       y += 6;
 
-      doc.setFontSize(10);
-      doc.setTextColor(100, 100, 100);
-      doc.text(`Focus: ${week.focusArea}`, margin, y);
+      doc.setFontSize(9);
+      doc.setTextColor(80, 80, 80);
+      doc.text(`Days ${week.dailyTasks[0].day}-${week.dailyTasks[week.dailyTasks.length - 1].day} | ${week.focusArea}`, margin, y);
       doc.setTextColor(0, 0, 0);
-      y += 7;
+      y += 6;
 
       // Daily tasks
       week.dailyTasks.forEach((task) => {
-        if (y > pageHeight - 60) {
+        if (y > pageHeight - 40) {
           doc.addPage();
           y = margin;
         }
 
-        doc.setFontSize(11);
-        doc.setFont(undefined, 'bold');
-        doc.text(`Day ${task.day}: ${task.title}`, margin, y);
-        doc.setFont(undefined, 'normal');
-        y += 5;
+        // Light gray box
+        doc.setDrawColor(200, 200, 200);
+        doc.setFillColor(245, 245, 245);
+        doc.rect(margin, y - 2, maxWidth, 20, 'F');
 
+        // Day number
+        doc.setFillColor(79, 70, 229);
+        doc.circle(margin + 5, y + 4, 3.5, 'F');
+        doc.setTextColor(255, 255, 255);
+        doc.setFontSize(9);
+        doc.setFont(undefined, 'bold');
+        doc.text(task.day.toString(), margin + 5, y + 5, { align: 'center' });
+        doc.setTextColor(0, 0, 0);
+
+        // Task title
+        doc.setFont(undefined, 'bold');
         doc.setFontSize(10);
-        const descLines = doc.splitTextToSize(task.description, maxWidth - 5);
-        doc.text(descLines, margin + 5, y);
-        y += descLines.length * 4 + 5;
+        doc.text(task.title, margin + 12, y + 5);
+
+        // Task description
+        doc.setFont(undefined, 'normal');
+        doc.setFontSize(9);
+        const descLines = doc.splitTextToSize(task.description, maxWidth - 15);
+        doc.text(descLines, margin + 12, y + 10);
+
+        y += 8 + descLines.length * 3.5 + 4;
       });
 
       // Reflection section
-      if (y > pageHeight - 80) {
+      if (y > pageHeight - 120) {
         doc.addPage();
         y = margin;
       }
 
-      doc.setFontSize(12);
+      y += 3;
+      doc.setDrawColor(79, 70, 229);
+      doc.setFillColor(240, 245, 255);
+      doc.rect(margin, y, maxWidth, 3, 'F');
+      y += 6;
+
+      doc.setFontSize(11);
       doc.setFont(undefined, 'bold');
       doc.text(`Week ${week.week} Reflection`, margin, y);
       doc.setFont(undefined, 'normal');
-      y += 7;
+      y += 6;
 
-      doc.setFontSize(10);
+      // Question 1
+      doc.setFontSize(9);
+      doc.setFont(undefined, 'bold');
       doc.text('What was your biggest win this week? What lessons did you learn?', margin, y);
-      y += 5;
-      doc.rect(margin, y, maxWidth, 25);
-      y += 30;
+      doc.setFont(undefined, 'normal');
+      y += 4;
+      doc.setDrawColor(100, 100, 100);
+      doc.line(margin, y, margin + maxWidth, y);
+      y += 38;
 
+      // Question 2
+      doc.setFont(undefined, 'bold');
       doc.text('In addition to the goals outlined for next week, what else would you focus on?', margin, y);
-      y += 5;
-      doc.rect(margin, y, maxWidth, 25);
-      y += 35;
+      doc.setFont(undefined, 'normal');
+      y += 4;
+      doc.setDrawColor(100, 100, 100);
+      doc.line(margin, y, margin + maxWidth, y);
+      y += 38;
     });
 
     doc.save(`${playbook.businessName}-Action-Plan.pdf`);
