@@ -12,12 +12,60 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: 'Missing API key' });
   }
 
+  // ===== LIMIT 1: IP ADDRESS - 10 requests per day =====
+  const clientIP = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+  const today = new Date().toISOString().split('T')[0];
+  const ipRateLimitKey = `playbook-ip-${clientIP}-${today}`;
+
+  global.ipRateLimitStore = global.ipRateLimitStore || {};
+
+  if (!global.ipRateLimitStore[ipRateLimitKey]) {
+    global.ipRateLimitStore[ipRateLimitKey] = 0;
+  }
+
+  global.ipRateLimitStore[ipRateLimitKey]++;
+
+  if (global.ipRateLimitStore[ipRateLimitKey] > 10) {
+    return res.status(429).json({ 
+      error: 'Daily limit reached',
+      message: 'Too many requests from this location. Please try again tomorrow.',
+      blocked: true,
+      reason: 'ip_limit'
+    });
+  }
+
+  // ===== LIMIT 2: EMAIL ADDRESS - 2 action plans per month =====
+  const ideaFormData = req.body.ideaFormData;
+  const userEmail = ideaFormData?.email || req.body.userEmail;
+
+  if (userEmail) {
+    const currentMonth = new Date().toISOString().slice(0, 7); // YYYY-MM
+    const emailLimitKey = `playbook-${userEmail}-${currentMonth}`;
+
+    global.emailLimitStore = global.emailLimitStore || {};
+
+    if (!global.emailLimitStore[emailLimitKey]) {
+      global.emailLimitStore[emailLimitKey] = 0;
+    }
+
+    global.emailLimitStore[emailLimitKey]++;
+
+    if (global.emailLimitStore[emailLimitKey] > 2) {
+      return res.status(429).json({
+        error: 'Monthly limit reached',
+        message: "You've used up your free 2 action plans. Come back for 2 more free plans next month.",
+        blocked: true,
+        reason: 'email_limit',
+        limitType: 'playbooks'
+      });
+    }
+  }
+
   console.log('Request body:', JSON.stringify(req.body, null, 2));
 
-  const ideaFormData = req.body.ideaFormData;
   const idea = req.body.idea;
-
   let businessIdea;
+
   if (ideaFormData) {
     const businessType = ideaFormData.businessType === 'Other' 
       ? ideaFormData.businessTypeOther 
@@ -39,9 +87,7 @@ export default async function handler(req, res) {
 
   const prompt = `Create a 4-week action plan for: ${businessIdea}
 Time available: ${timeCommitment}
-
 4 weeks, 5 tasks per week (20 days total). Each task description under 30 words.
-
 Return ONLY valid JSON (no markdown):
 {
   "businessName": "Name",
