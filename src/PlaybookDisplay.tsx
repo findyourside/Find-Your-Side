@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import jsPDF from 'jspdf';
-import { ChevronLeft, Download, Mail, CheckCircle } from 'lucide-react';
+import { ChevronLeft, Download, Mail, CheckCircle, Zap, BookOpen } from 'lucide-react';
 import { supabase } from './lib/supabase';
 import { analytics } from './lib/analytics';
 import FeatureValidation from './FeatureValidation';
@@ -10,16 +10,12 @@ interface DailyTask {
   day: number;
   title: string;
   description: string;
-  timeEstimate: string;
-  resources: string[];
 }
 
 interface Week {
   week: number;
   title: string;
   focusArea: string;
-  successMetric: string;
-  totalTime: string;
   dailyTasks: DailyTask[];
 }
 
@@ -43,37 +39,98 @@ export default function PlaybookDisplay({ playbook, onBack, userEmail, timeCommi
   const [emailSent, setEmailSent] = useState(false);
   const [showEmailPreview, setShowEmailPreview] = useState(false);
   const [optInDay1, setOptInDay1] = useState(false);
+  const [expandedDay, setExpandedDay] = useState<string | null>(null);
 
-  const handleDownload = () => {
+  const generatePDF = () => {
     const doc = new jsPDF();
     let y = 20;
-    
-    doc.setFontSize(18);
-    doc.text(playbook.businessName, 20, y);
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
+    const margin = 20;
+    const maxWidth = pageWidth - 2 * margin;
+
+    // Title
+    doc.setFontSize(20);
+    doc.text('Your 4-Week Action Plan', margin, y);
     y += 10;
-    
+
+    // Business name
+    doc.setFontSize(16);
+    doc.setTextColor(79, 70, 229);
+    doc.text(playbook.businessName, margin, y);
+    doc.setTextColor(0, 0, 0);
+    y += 8;
+
+    // Overview
     doc.setFontSize(10);
-    doc.text(playbook.overview, 20, y, { maxWidth: 170 });
-    y += 20;
-    
-    playbook.weeks.forEach(week => {
+    const overviewLines = doc.splitTextToSize(playbook.overview, maxWidth);
+    doc.text(overviewLines, margin, y);
+    y += overviewLines.length * 5 + 5;
+
+    // Weeks
+    playbook.weeks.forEach((week) => {
+      if (y > pageHeight - 40) {
+        doc.addPage();
+        y = margin;
+      }
+
+      // Week header
       doc.setFontSize(14);
-      doc.text('Week ' + week.week + ': ' + week.title, 20, y);
+      doc.setFont(undefined, 'bold');
+      doc.text(`Week ${week.week}: ${week.title}`, margin, y);
+      doc.setFont(undefined, 'normal');
+      y += 6;
+
+      doc.setFontSize(10);
+      doc.setTextColor(100, 100, 100);
+      doc.text(`Focus: ${week.focusArea}`, margin, y);
+      doc.setTextColor(0, 0, 0);
       y += 7;
-      
-      week.dailyTasks.forEach(task => {
-        if (y > 270) { doc.addPage(); y = 20; }
+
+      // Daily tasks
+      week.dailyTasks.forEach((task) => {
+        if (y > pageHeight - 60) {
+          doc.addPage();
+          y = margin;
+        }
+
         doc.setFontSize(11);
-        doc.text('Day ' + task.day + ': ' + task.title, 20, y);
+        doc.setFont(undefined, 'bold');
+        doc.text(`Day ${task.day}: ${task.title}`, margin, y);
+        doc.setFont(undefined, 'normal');
         y += 5;
-        doc.setFontSize(9);
-        doc.text(task.description, 25, y, { maxWidth: 165 });
-        y += 10;
+
+        doc.setFontSize(10);
+        const descLines = doc.splitTextToSize(task.description, maxWidth - 5);
+        doc.text(descLines, margin + 5, y);
+        y += descLines.length * 4 + 5;
       });
+
+      // Reflection section
+      if (y > pageHeight - 80) {
+        doc.addPage();
+        y = margin;
+      }
+
+      doc.setFontSize(12);
+      doc.setFont(undefined, 'bold');
+      doc.text(`Week ${week.week} Reflection`, margin, y);
+      doc.setFont(undefined, 'normal');
+      y += 7;
+
+      doc.setFontSize(10);
+      doc.text('What was your biggest win this week? What lessons did you learn?', margin, y);
       y += 5;
+      doc.rect(margin, y, maxWidth, 25);
+      y += 30;
+
+      doc.text('In addition to the goals outlined for next week, what else would you focus on?', margin, y);
+      y += 5;
+      doc.rect(margin, y, maxWidth, 25);
+      y += 35;
     });
-    
-    doc.save(playbook.businessName + '-Action-Plan.pdf');
+
+    doc.save(`${playbook.businessName}-Action-Plan.pdf`);
     analytics.playbookDownloaded();
   };
 
@@ -145,7 +202,7 @@ export default function PlaybookDisplay({ playbook, onBack, userEmail, timeCommi
         </div>
       </header>
 
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
           <button
             onClick={onBack}
@@ -165,48 +222,151 @@ export default function PlaybookDisplay({ playbook, onBack, userEmail, timeCommi
           </div>
         )}
 
-        <div className="bg-white rounded-2xl shadow-lg p-8 lg:p-12 mb-8">
-          <div className="text-center mb-8">
-            <h1 className="text-4xl font-bold text-gray-900 mb-4">
-              Your 4-Week Action Plan
-            </h1>
-            <h2 className="text-2xl font-semibold text-indigo-600 mb-4">
-              {playbook.businessName}
-            </h2>
-            <p className="text-lg text-gray-600 max-w-3xl mx-auto">
-              {playbook.overview}
-            </p>
-          </div>
+        <div className="text-center mb-12">
+          <h1 className="text-4xl font-bold text-gray-900 mb-3">Your 4-Week Action Plan</h1>
+          <h2 className="text-2xl font-semibold text-indigo-600 mb-4">{playbook.businessName}</h2>
+          <p className="text-lg text-gray-600 max-w-2xl mx-auto">{playbook.overview}</p>
+        </div>
 
-          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
-            <button
-              onClick={handleDownload}
-              className="flex items-center justify-center px-6 py-3 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 transition-all shadow-md hover:shadow-lg"
-            >
-              <Download className="w-5 h-5 mr-2" />
-              Download Plan
-            </button>
-            <button
-              onClick={() => setShowEmailPreview(true)}
-              disabled={isSendingEmail || !userEmail}
-              className="flex items-center justify-center px-6 py-3 border-2 border-indigo-600 text-indigo-600 font-semibold rounded-lg hover:bg-indigo-50 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <Mail className="w-5 h-5 mr-2" />
-              {isSendingEmail ? 'Sending...' : 'Email Me This Plan'}
-            </button>
-          </div>
+        <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
+          <button
+            onClick={generatePDF}
+            className="flex items-center justify-center px-8 py-3 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 transition-all shadow-md hover:shadow-lg"
+          >
+            <Download className="w-5 h-5 mr-2" />
+            Download Plan
+          </button>
+          <button
+            onClick={() => setShowEmailPreview(true)}
+            disabled={isSendingEmail || !userEmail}
+            className="flex items-center justify-center px-8 py-3 border-2 border-indigo-600 text-indigo-600 font-semibold rounded-lg hover:bg-indigo-50 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <Mail className="w-5 h-5 mr-2" />
+            {isSendingEmail ? 'Sending...' : 'Email Me This Plan'}
+          </button>
+        </div>
 
-          {showEmailPreview && (
-            <EmailPreviewModal
-              playbook={playbook}
-              userEmail={userEmail || ''}
-              onClose={() => setShowEmailPreview(false)}
-              onSend={handleSendEmail}
-              isSending={isSendingEmail}
-              optInDay1={optInDay1}
-              setOptInDay1={setOptInDay1}
-            />
-          )}
+        {showEmailPreview && (
+          <EmailPreviewModal
+            playbook={playbook}
+            userEmail={userEmail || ''}
+            onClose={() => setShowEmailPreview(false)}
+            onSend={handleSendEmail}
+            isSending={isSendingEmail}
+            optInDay1={optInDay1}
+            setOptInDay1={setOptInDay1}
+          />
+        )}
+
+        {/* Action Plan Content */}
+        <div className="space-y-12 mb-12">
+          {playbook.weeks.map((week) => (
+            <div key={week.week}>
+              {/* Week Header */}
+              <div className="bg-gradient-to-r from-indigo-600 to-blue-600 rounded-xl p-6 text-white shadow-md mb-6">
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <p className="text-indigo-100 text-sm font-semibold uppercase">Week {week.week}</p>
+                    <h2 className="text-3xl font-bold mt-1">{week.title}</h2>
+                  </div>
+                  <Zap className="w-10 h-10 opacity-80" />
+                </div>
+                <p className="text-indigo-100">{week.focusArea}</p>
+              </div>
+
+              {/* Daily Tasks Cards */}
+              <div className="space-y-4 mb-8">
+                {week.dailyTasks.map((task) => {
+                  const dayKey = `${week.week}-${task.day}`;
+                  return (
+                    <div
+                      key={task.day}
+                      className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden"
+                    >
+                      <button
+                        onClick={() =>
+                          setExpandedDay(expandedDay === dayKey ? null : dayKey)
+                        }
+                        className="w-full p-5 hover:bg-gray-50 transition-colors flex items-start gap-4 text-left"
+                      >
+                        <div className="flex items-center justify-center h-8 w-8 rounded-lg bg-indigo-100 flex-shrink-0 mt-0.5">
+                          <span className="text-indigo-700 font-bold text-sm">
+                            Day {task.day}
+                          </span>
+                        </div>
+                        <div className="flex-grow">
+                          <h4 className="font-bold text-gray-900 text-base">
+                            {task.title}
+                          </h4>
+                          <p className="text-gray-600 text-sm leading-relaxed mt-1">
+                            {task.description}
+                          </p>
+                        </div>
+                        <div className="text-indigo-600 flex-shrink-0">
+                          <svg
+                            className={`w-5 h-5 transition-transform ${
+                              expandedDay === dayKey ? 'rotate-180' : ''
+                            }`}
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M19 14l-7 7m0 0l-7-7m7 7V3"
+                            />
+                          </svg>
+                        </div>
+                      </button>
+
+                      {expandedDay === dayKey && (
+                        <div className="border-t border-gray-100 px-5 py-4 bg-gray-50">
+                          <label className="block text-sm font-semibold text-gray-900 mb-2">
+                            <BookOpen className="inline w-4 h-4 mr-2" />
+                            Your Notes & Reflections
+                          </label>
+                          <textarea
+                            placeholder="What did you accomplish? What was challenging? What did you learn?"
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm resize-none"
+                            rows={3}
+                          />
+                          <p className="text-xs text-gray-500 mt-2">
+                            Tip: Use this space to reflect on your progress and capture insights.
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Week Reflection */}
+              <div className="bg-indigo-50 rounded-lg border border-indigo-200 p-6">
+                <h3 className="font-bold text-gray-900 mb-5 flex items-center gap-2 text-lg">
+                  <CheckCircle className="w-5 h-5 text-indigo-600" />
+                  Week {week.week} Reflection
+                </h3>
+
+                <div className="space-y-8">
+                  <div>
+                    <p className="font-semibold text-gray-900 mb-3">
+                      What was your biggest win this week? What lessons did you learn?
+                    </p>
+                    <div className="bg-white rounded border-2 border-indigo-200 h-28"></div>
+                  </div>
+
+                  <div>
+                    <p className="font-semibold text-gray-900 mb-3">
+                      In addition to the goals outlined for next week, what else would you focus on?
+                    </p>
+                    <div className="bg-white rounded border-2 border-indigo-200 h-28"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
 
         <FeatureValidation userEmail={userEmail} />
