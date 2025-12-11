@@ -5,6 +5,7 @@ import IdeaForm from './IdeaForm';
 import BusinessIdeasResults from './BusinessIdeasResults';
 import PlaybookDisplay from './PlaybookDisplay';
 import FAQ from './FAQ';
+import Disclaimer from './Disclaimer';
 import WaitlistSignup from './WaitlistSignup';
 import { analytics } from './lib/analytics';
 
@@ -527,13 +528,15 @@ function App() {
 
       <FAQ />
 
+      <Disclaimer />
+
       <footer className="border-t border-gray-200" style={{ backgroundColor: '#1a1f3a' }}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="text-center mb-6">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <div className="text-center mb-3">
             <img
               src="/Find your side.svg"
               alt="Find Your Side"
-              className="w-[200px] h-auto mx-auto"
+              className="w-[240px] h-auto mx-auto"
             />
           </div>
           <div className="text-center">
