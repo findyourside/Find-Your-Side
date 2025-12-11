@@ -15,7 +15,54 @@ export default async function handler(req, res) {
     });
   }
 
+  // ===== LIMIT 1: IP ADDRESS - 10 requests per day =====
+  const clientIP = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+  const today = new Date().toISOString().split('T')[0];
+  const ipRateLimitKey = `ideas-ip-${clientIP}-${today}`;
+
+  global.ipRateLimitStore = global.ipRateLimitStore || {};
+
+  if (!global.ipRateLimitStore[ipRateLimitKey]) {
+    global.ipRateLimitStore[ipRateLimitKey] = 0;
+  }
+
+  global.ipRateLimitStore[ipRateLimitKey]++;
+
+  if (global.ipRateLimitStore[ipRateLimitKey] > 10) {
+    return res.status(429).json({ 
+      error: 'Daily limit reached',
+      message: 'Too many requests from this location. Please try again tomorrow.',
+      blocked: true,
+      reason: 'ip_limit'
+    });
+  }
+
+  // ===== LIMIT 2: EMAIL ADDRESS - 2 idea sets per month =====
   const answers = req.body.quizData || req.body;
+  const userEmail = answers?.email;
+
+  if (userEmail) {
+    const currentMonth = new Date().toISOString().slice(0, 7); // YYYY-MM
+    const emailLimitKey = `ideas-${userEmail}-${currentMonth}`;
+
+    global.emailLimitStore = global.emailLimitStore || {};
+
+    if (!global.emailLimitStore[emailLimitKey]) {
+      global.emailLimitStore[emailLimitKey] = 0;
+    }
+
+    global.emailLimitStore[emailLimitKey]++;
+
+    if (global.emailLimitStore[emailLimitKey] > 2) {
+      return res.status(429).json({
+        error: 'Monthly limit reached',
+        message: "You've used up your free 2 personalized idea sets. Come back for 2 more free sets next month.",
+        blocked: true,
+        reason: 'email_limit',
+        limitType: 'ideas'
+      });
+    }
+  }
 
   if (!answers?.interests?.length || !answers?.skills?.length) {
     return res.status(400).json({ 
@@ -29,7 +76,7 @@ export default async function handler(req, res) {
   const skills = Array.isArray(answers.skills) ? answers.skills.join(', ') : answers.skills;
   const goals = Array.isArray(answers.goal) ? answers.goal.join(', ') : (answers.goal || 'income');
 
-  const prompt = `Generate 10 personalized business ideas based on this profile:
+  const prompt = `Generate 5 personalized business ideas based on this profile:
 - Interests: ${interests}
 - Skills: ${skills}
 - Time available: ${answers.timeCommitment}
@@ -39,7 +86,7 @@ export default async function handler(req, res) {
 Return ONLY valid JSON (no markdown):
 {"ideas":[{"id":1,"name":"Idea Name","whyItFits":"One sentence why it fits","timeRequired":"2-4 weeks","firstStep":"One specific action"}]}
 
-Create 10 unique ideas. Each field under 15 words.`;
+Create 5 unique ideas. Each field under 15 words.`;
 
   try {
     const response = await fetch('https://api.anthropic.com/v1/messages', {
@@ -67,7 +114,6 @@ Create 10 unique ideas. Each field under 15 words.`;
     const data = await response.json();
     let text = data.content[0].text.trim();
     
-    // Remove markdown code blocks if present
     text = text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
 
     const ideas = JSON.parse(text);
@@ -81,19 +127,13 @@ Create 10 unique ideas. Each field under 15 words.`;
   } catch (error) {
     console.error('Error:', error.message);
     
-    // Return fallback with personalized context
     return res.status(200).json({
       ideas: [
         { id: 1, name: "Social Media Manager", whyItFits: `Combines your ${skills} skills with ${interests} interests`, timeRequired: "1-2 weeks", firstStep: "Interview 5 small business owners about their social media needs" },
         { id: 2, name: "Freelance Writer", whyItFits: "Leverages your communication abilities", timeRequired: "2-3 weeks", firstStep: "Write 3 sample articles in your interest area" },
         { id: 3, name: "Virtual Assistant", whyItFits: "Matches your organizational skills", timeRequired: "1 week", firstStep: "Create service packages and pricing" },
         { id: 4, name: "Pet Sitting Service", whyItFits: "Flexible schedule fitting your time commitment", timeRequired: "1 week", firstStep: "Post profile on Rover with availability" },
-        { id: 5, name: "Online Tutoring", whyItFits: "Uses your subject knowledge", timeRequired: "2 weeks", firstStep: "Create tutor profile on Chegg or Wyzant" },
-        { id: 6, name: "Graphic Design", whyItFits: "Applies creative skills", timeRequired: "2-3 weeks", firstStep: "Build 5 portfolio pieces on Canva" },
-        { id: 7, name: "Content Creator", whyItFits: `Create content about ${interests}`, timeRequired: "4-8 weeks", firstStep: "Post 10 pieces and track engagement" },
-        { id: 8, name: "Dropshipping Store", whyItFits: "Entrepreneurial business model", timeRequired: "3-4 weeks", firstStep: "Research 10 trending products" },
-        { id: 9, name: "Email Newsletter", whyItFits: "Build audience in your interest area", timeRequired: "8-12 weeks", firstStep: "Write first 4 newsletter issues" },
-        { id: 10, name: "Online Course", whyItFits: "Teach your expertise", timeRequired: "6-10 weeks", firstStep: "Outline 5 course modules" }
+        { id: 5, name: "Online Tutoring", whyItFits: "Uses your subject knowledge", timeRequired: "2 weeks", firstStep: "Create tutor profile on Chegg or Wyzant" }
       ]
     });
   }
