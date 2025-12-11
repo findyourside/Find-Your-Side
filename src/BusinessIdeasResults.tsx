@@ -1,4 +1,4 @@
-import { ChevronLeft, Timer, Lightbulb } from 'lucide-react';
+import { ChevronLeft, Lightbulb } from 'lucide-react';
 import GenerationCounter from './GenerationCounter';
 
 interface BusinessIdea {
@@ -52,7 +52,7 @@ export default function BusinessIdeasResults({ ideas, onSelectIdea, onBack, idea
             Your Personalized Business Ideas
           </h1>
           <p className="text-xl text-gray-600">
-            Select an idea to get your 30-day launch playbook
+            Select an idea to get your personalized 4-week action plan
           </p>
         </div>
 
@@ -66,19 +66,9 @@ export default function BusinessIdeasResults({ ideas, onSelectIdea, onBack, idea
             >
               <h3 className="text-xl font-bold text-gray-900 mb-4">{idea.name}</h3>
 
-              <div className="mb-4 flex-grow">
+              <div className="mb-6 flex-grow">
                 <p className="text-sm font-semibold text-gray-700 mb-2">Why this fits you:</p>
                 <p className="text-gray-600 text-sm leading-relaxed">{idea.whyItFits}</p>
-              </div>
-
-              <div className="space-y-3 mb-4">
-                <div className="flex items-center space-x-2">
-                  <Timer className="w-4 h-4 text-blue-600 flex-shrink-0" />
-                  <div>
-                    <span className="text-xs font-semibold text-gray-500">Time: </span>
-                    <span className="text-sm text-gray-700">{idea.timeRequired}</span>
-                  </div>
-                </div>
               </div>
 
               <div className="rounded-lg p-3 mb-4" style={{ backgroundColor: '#FEF3C7' }}>
