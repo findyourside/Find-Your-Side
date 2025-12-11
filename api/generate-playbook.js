@@ -38,23 +38,21 @@ export default async function handler(req, res) {
   }
 
   const prompt = `Create a 4-week action plan for: ${businessIdea}
-Time: ${timeCommitment}
+Time available: ${timeCommitment}
 
-4 weeks, 5 tasks/week (20 days). Be concise.
+4 weeks, 5 tasks per week (20 days total). Each task description under 30 words.
 
-Return JSON only:
+Return ONLY valid JSON (no markdown):
 {
   "businessName": "Name",
   "overview": "1 sentence about launch strategy",
   "weeks": [
     {
       "week": 1,
-      "title": "Title",
-      "focusArea": "Area",
-      "successMetric": "Metric",
-      "totalTime": "Hours",
+      "title": "Week title",
+      "focusArea": "Key focus area for this week",
       "dailyTasks": [
-        {"day": 1, "title": "Task", "description": "30 words max", "timeEstimate": "X hrs", "resources": ["R1", "R2"]}
+        {"day": 1, "title": "Task title", "description": "Clear task description under 30 words"}
       ]
     }
   ]
@@ -105,33 +103,10 @@ Return JSON only:
       return res.status(500).json({ error: 'Invalid playbook structure' });
     }
 
-    const pdfData = generatePDFData(playbook);
-
-    return res.status(200).json({ playbook, pdfData });
+    return res.status(200).json({ playbook });
 
   } catch (error) {
     console.error('Error:', error.message);
     return res.status(500).json({ error: 'Internal error', message: error.message });
   }
-}
-
-function generatePDFData(playbook) {
-  let content = `${playbook.businessName}\n\n`;
-  content += `${playbook.overview}\n\n`;
-  
-  playbook.weeks.forEach(week => {
-    content += `\nWEEK ${week.week}: ${week.title}\n`;
-    content += `Focus: ${week.focusArea}\n`;
-    content += `Success Metric: ${week.successMetric}\n`;
-    content += `Total Time: ${week.totalTime}\n\n`;
-    
-    week.dailyTasks.forEach(task => {
-      content += `Day ${task.day}: ${task.title}\n`;
-      content += `${task.description}\n`;
-      content += `Time: ${task.timeEstimate}\n`;
-      content += `Resources: ${task.resources.join(', ')}\n\n`;
-    });
-  });
-  
-  return content;
 }
