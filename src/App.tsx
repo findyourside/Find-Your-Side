@@ -28,6 +28,7 @@ interface IdeaFormData {
   problemSolving: string;
   targetCustomer: string;
   timeCommitment: string;
+  timeCommitmentOther: string;
   skillsExperience: string;
   email: string;
   businessIdea?: string;
@@ -541,7 +542,7 @@ function GeneratingIdeasView() {
   }, []);
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+    <div className="fixed inset-0 bg-gray-400 bg-opacity-40 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8">
         <div className="flex justify-center mb-6">
           <div className="relative w-12 h-12">
@@ -569,7 +570,7 @@ function GeneratingPlaybookView() {
   }, []);
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+    <div className="fixed inset-0 bg-gray-400 bg-opacity-40 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8">
         <div className="flex justify-center mb-6">
           <div className="relative w-12 h-12">
