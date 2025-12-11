@@ -34,12 +34,12 @@ export default async function handler(req, res) {
 - Skills: ${skills}
 - Time available: ${answers.timeCommitment}
 - Goals: ${goals}
-- Experience level: ${answers.experience || 'beginner'}
+- Experience: ${answers.experience || 'beginner'}
 
-Return ONLY valid JSON (no markdown, no code blocks):
-{"ideas":[{"id":1,"name":"Specific business name","whyItFits":"One sentence explaining why this fits their interests and skills","timeRequired":"X weeks or X months","firstStep":"One specific action to validate this idea"}]}
+Return ONLY valid JSON (no markdown):
+{"ideas":[{"id":1,"name":"Idea Name","whyItFits":"One sentence why it fits","timeRequired":"2-4 weeks","firstStep":"One specific action"}]}
 
-Create 10 unique ideas personalized to their profile. Each idea must have all 4 fields: id, name, whyItFits, timeRequired, firstStep.`;
+Create 10 unique ideas. Each field under 15 words.`;
 
   try {
     const response = await fetch('https://api.anthropic.com/v1/messages', {
@@ -51,7 +51,7 @@ Create 10 unique ideas personalized to their profile. Each idea must have all 4 
       },
       body: JSON.stringify({
         model: 'claude-sonnet-4-20250514',
-        max_tokens: 2500,
+        max_tokens: 2000,
         messages: [{ role: 'user', content: prompt }],
       }),
     });
@@ -84,16 +84,16 @@ Create 10 unique ideas personalized to their profile. Each idea must have all 4 
     // Return fallback with personalized context
     return res.status(200).json({
       ideas: [
-        { id: 1, name: "Social Media Manager", whyMatch: `Combines your ${skills} skills with ${interests} interests`, timeToRevenue: "1-2 weeks", firstStep: "Interview 5 small business owners about their social media needs" },
-        { id: 2, name: "Freelance Writer", whyMatch: "Leverages your communication abilities", timeToRevenue: "2-3 weeks", firstStep: "Write 3 sample articles in your interest area" },
-        { id: 3, name: "Virtual Assistant", whyMatch: "Matches your organizational skills", timeToRevenue: "1 week", firstStep: "Create service packages and pricing" },
-        { id: 4, name: "Pet Sitting Service", whyMatch: "Flexible schedule fitting your time commitment", timeToRevenue: "1 week", firstStep: "Post profile on Rover with availability" },
-        { id: 5, name: "Online Tutoring", whyMatch: "Uses your subject knowledge", timeToRevenue: "2 weeks", firstStep: "Create tutor profile on Chegg or Wyzant" },
-        { id: 6, name: "Graphic Design", whyMatch: "Applies creative skills", timeToRevenue: "2-3 weeks", firstStep: "Build 5 portfolio pieces on Canva" },
-        { id: 7, name: "Content Creator", whyMatch: `Create content about ${interests}`, timeToRevenue: "4-8 weeks", firstStep: "Post 10 pieces and track engagement" },
-        { id: 8, name: "Dropshipping Store", whyMatch: "Entrepreneurial business model", timeToRevenue: "3-4 weeks", firstStep: "Research 10 trending products" },
-        { id: 9, name: "Email Newsletter", whyMatch: "Build audience in your interest area", timeToRevenue: "8-12 weeks", firstStep: "Write first 4 newsletter issues" },
-        { id: 10, name: "Online Course", whyMatch: "Teach your expertise", timeToRevenue: "6-10 weeks", firstStep: "Outline 5 course modules" }
+        { id: 1, name: "Social Media Manager", whyItFits: `Combines your ${skills} skills with ${interests} interests`, timeRequired: "1-2 weeks", firstStep: "Interview 5 small business owners about their social media needs" },
+        { id: 2, name: "Freelance Writer", whyItFits: "Leverages your communication abilities", timeRequired: "2-3 weeks", firstStep: "Write 3 sample articles in your interest area" },
+        { id: 3, name: "Virtual Assistant", whyItFits: "Matches your organizational skills", timeRequired: "1 week", firstStep: "Create service packages and pricing" },
+        { id: 4, name: "Pet Sitting Service", whyItFits: "Flexible schedule fitting your time commitment", timeRequired: "1 week", firstStep: "Post profile on Rover with availability" },
+        { id: 5, name: "Online Tutoring", whyItFits: "Uses your subject knowledge", timeRequired: "2 weeks", firstStep: "Create tutor profile on Chegg or Wyzant" },
+        { id: 6, name: "Graphic Design", whyItFits: "Applies creative skills", timeRequired: "2-3 weeks", firstStep: "Build 5 portfolio pieces on Canva" },
+        { id: 7, name: "Content Creator", whyItFits: `Create content about ${interests}`, timeRequired: "4-8 weeks", firstStep: "Post 10 pieces and track engagement" },
+        { id: 8, name: "Dropshipping Store", whyItFits: "Entrepreneurial business model", timeRequired: "3-4 weeks", firstStep: "Research 10 trending products" },
+        { id: 9, name: "Email Newsletter", whyItFits: "Build audience in your interest area", timeRequired: "8-12 weeks", firstStep: "Write first 4 newsletter issues" },
+        { id: 10, name: "Online Course", whyItFits: "Teach your expertise", timeRequired: "6-10 weeks", firstStep: "Outline 5 course modules" }
       ]
     });
   }
