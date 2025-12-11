@@ -162,19 +162,19 @@ export default function Quiz({ onComplete, onBack }: QuizProps) {
   return (
     <div className="min-h-screen bg-white">
       <header className="border-b border-gray-100">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2">
           <div className="flex items-center justify-center">
             <img
               src="/Find your side dark.svg"
               alt="Find Your Side - Idea to Execution"
-              className="w-[280px] h-auto"
+              className="w-[200px] h-auto"
             />
           </div>
         </div>
       </header>
 
-      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="mb-8">
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <div className="mb-6">
           <div className="flex justify-between items-center mb-2">
             <p className="text-sm text-gray-600">Question {currentQuestion} of 6</p>
             <p className="text-sm text-gray-600">{Math.round((currentQuestion / 6) * 100)}%</p>
