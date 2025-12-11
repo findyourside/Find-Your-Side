@@ -239,10 +239,9 @@ export default function Quiz({ onComplete, onBack }: QuizProps) {
               </legend>
               <div className="space-y-3">
                 {[
-                  'Less than 5 hours/week (about 30-45 min/day)',
-                  '5 hours/week (about 1 hour/day)',
-                  '10 hours/week (1-2 hours/day or full weekend)',
-                  '15+ hours/week (2-3 hours daily)',
+                  '2-5 hours/week',
+                  '10+ hours/week',
+                  '15+ hours/week',
                   'Other'
                 ].map((option) => (
                   <label
@@ -269,7 +268,7 @@ export default function Quiz({ onComplete, onBack }: QuizProps) {
                   <div className="mt-4 ml-8">
                     <input
                       type="text"
-                      placeholder="Please specify your availability (e.g., 20 hours but only on weekends)"
+                      placeholder="Please specify your availability"
                       value={formData.timeCommitmentOther}
                       onChange={(e) => setFormData({
                         ...formData,
