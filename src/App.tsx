@@ -538,7 +538,10 @@ function App() {
           </div>
           <div className="text-center">
             <p className="text-gray-300 text-sm mb-2">
-              Privacy Policy | Terms | Cookie Policy | Disclaimer |{' '}
+              <a href="/privacy" className="text-indigo-400 hover:text-indigo-300 transition-colors">Privacy Policy</a> | 
+              <a href="/terms" className="text-indigo-400 hover:text-indigo-300 transition-colors"> Terms</a> | 
+              <a href="/cookies" className="text-indigo-400 hover:text-indigo-300 transition-colors"> Cookie Policy</a> | 
+              <a href="/disclaimer" className="text-indigo-400 hover:text-indigo-300 transition-colors"> Disclaimer</a> |{' '}
               <a
                 href="mailto:hello.findyourside@gmail.com"
                 className="text-indigo-400 hover:text-indigo-300 transition-colors"
