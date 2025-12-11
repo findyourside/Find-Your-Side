@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import jsPDF from 'jspdf';
-import { ChevronLeft, Download, Mail, CheckCircle, Zap, BookOpen } from 'lucide-react';
+import { ChevronLeft, Download, Mail, CheckCircle } from 'lucide-react';
 import { supabase } from './lib/supabase';
 import { analytics } from './lib/analytics';
 import FeatureValidation from './FeatureValidation';
@@ -39,7 +39,6 @@ export default function PlaybookDisplay({ playbook, onBack, userEmail, timeCommi
   const [emailSent, setEmailSent] = useState(false);
   const [showEmailPreview, setShowEmailPreview] = useState(false);
   const [optInDay1, setOptInDay1] = useState(false);
-  const [expandedDay, setExpandedDay] = useState<string | null>(null);
 
   const generatePDF = () => {
     const doc = new jsPDF();
@@ -257,117 +256,6 @@ export default function PlaybookDisplay({ playbook, onBack, userEmail, timeCommi
             setOptInDay1={setOptInDay1}
           />
         )}
-
-        {/* Action Plan Content */}
-        <div className="space-y-12 mb-12">
-          {playbook.weeks.map((week) => (
-            <div key={week.week}>
-              {/* Week Header */}
-              <div className="bg-gradient-to-r from-indigo-600 to-blue-600 rounded-xl p-6 text-white shadow-md mb-6">
-                <div className="flex items-center justify-between mb-4">
-                  <div>
-                    <p className="text-indigo-100 text-sm font-semibold uppercase">Week {week.week}</p>
-                    <h2 className="text-3xl font-bold mt-1">{week.title}</h2>
-                  </div>
-                  <Zap className="w-10 h-10 opacity-80" />
-                </div>
-                <p className="text-indigo-100">{week.focusArea}</p>
-              </div>
-
-              {/* Daily Tasks Cards */}
-              <div className="space-y-4 mb-8">
-                {week.dailyTasks.map((task) => {
-                  const dayKey = `${week.week}-${task.day}`;
-                  return (
-                    <div
-                      key={task.day}
-                      className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden"
-                    >
-                      <button
-                        onClick={() =>
-                          setExpandedDay(expandedDay === dayKey ? null : dayKey)
-                        }
-                        className="w-full p-5 hover:bg-gray-50 transition-colors flex items-start gap-4 text-left"
-                      >
-                        <div className="flex items-center justify-center h-8 w-8 rounded-lg bg-indigo-100 flex-shrink-0 mt-0.5">
-                          <span className="text-indigo-700 font-bold text-sm">
-                            Day {task.day}
-                          </span>
-                        </div>
-                        <div className="flex-grow">
-                          <h4 className="font-bold text-gray-900 text-base">
-                            {task.title}
-                          </h4>
-                          <p className="text-gray-600 text-sm leading-relaxed mt-1">
-                            {task.description}
-                          </p>
-                        </div>
-                        <div className="text-indigo-600 flex-shrink-0">
-                          <svg
-                            className={`w-5 h-5 transition-transform ${
-                              expandedDay === dayKey ? 'rotate-180' : ''
-                            }`}
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M19 14l-7 7m0 0l-7-7m7 7V3"
-                            />
-                          </svg>
-                        </div>
-                      </button>
-
-                      {expandedDay === dayKey && (
-                        <div className="border-t border-gray-100 px-5 py-4 bg-gray-50">
-                          <label className="block text-sm font-semibold text-gray-900 mb-2">
-                            <BookOpen className="inline w-4 h-4 mr-2" />
-                            Your Notes & Reflections
-                          </label>
-                          <textarea
-                            placeholder="What did you accomplish? What was challenging? What did you learn?"
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm resize-none"
-                            rows={3}
-                          />
-                          <p className="text-xs text-gray-500 mt-2">
-                            Tip: Use this space to reflect on your progress and capture insights.
-                          </p>
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-
-              {/* Week Reflection */}
-              <div className="bg-indigo-50 rounded-lg border border-indigo-200 p-6">
-                <h3 className="font-bold text-gray-900 mb-5 flex items-center gap-2 text-lg">
-                  <CheckCircle className="w-5 h-5 text-indigo-600" />
-                  Week {week.week} Reflection
-                </h3>
-
-                <div className="space-y-8">
-                  <div>
-                    <p className="font-semibold text-gray-900 mb-3">
-                      What was your biggest win this week? What lessons did you learn?
-                    </p>
-                    <div className="bg-white rounded border-2 border-indigo-200 h-28"></div>
-                  </div>
-
-                  <div>
-                    <p className="font-semibold text-gray-900 mb-3">
-                      In addition to the goals outlined for next week, what else would you focus on?
-                    </p>
-                    <div className="bg-white rounded border-2 border-indigo-200 h-28"></div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
 
         <FeatureValidation userEmail={userEmail} />
       </div>
