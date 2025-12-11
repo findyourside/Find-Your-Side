@@ -237,52 +237,41 @@ export default function Quiz({ onComplete, onBack }: QuizProps) {
               <legend className="text-3xl font-bold text-gray-900 mb-6">
                 How much time can you dedicate weekly?
               </legend>
-              <div className="space-y-3">
-                {[
-                  '2-5 hours/week',
-                  '10+ hours/week',
-                  '15+ hours/week',
-                  'Other'
-                ].map((option) => (
-                  <label
-                    key={option}
-                    className="flex items-center p-4 border-2 border-gray-200 rounded-lg cursor-pointer transition-colors hover:border-[#4F46E5]"
-                  >
-                    <input
-                      type="radio"
-                      name="timeCommitment"
-                      checked={formData.timeCommitment === option}
-                      onChange={() => setFormData({
-                        ...formData,
-                        timeCommitment: option,
-                        timeCommitmentOther: option === 'Other' ? formData.timeCommitmentOther : ''
-                      })}
-                      className="w-5 h-5"
-                      style={{ accentColor: '#4F46E5' }}
-                    />
-                    <span className="ml-3 text-lg text-gray-900">{option}</span>
-                  </label>
-                ))}
+              <select
+                value={formData.timeCommitment}
+                onChange={(e) => setFormData({
+                  ...formData,
+                  timeCommitment: e.target.value,
+                  timeCommitmentOther: e.target.value === 'Other' ? formData.timeCommitmentOther : ''
+                })}
+                className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:border-transparent text-lg"
+                style={{ '--tw-ring-color': '#4F46E5' } as React.CSSProperties}
+              >
+                <option value="">Select time commitment</option>
+                <option value="2-5 hours/week">2-5 hours/week</option>
+                <option value="10+ hours/week">10+ hours/week</option>
+                <option value="15+ hours/week">15+ hours/week</option>
+                <option value="Other">Other</option>
+              </select>
 
-                {formData.timeCommitment === 'Other' && (
-                  <div className="mt-4 ml-8">
-                    <input
-                      type="text"
-                      placeholder="Please specify your availability"
-                      value={formData.timeCommitmentOther}
-                      onChange={(e) => setFormData({
-                        ...formData,
-                        timeCommitmentOther: e.target.value.slice(0, 50)
-                      })}
-                      maxLength={50}
-                      className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-[#4F46E5] text-lg"
-                    />
-                    <p className="text-sm text-gray-500 mt-1">
-                      {formData.timeCommitmentOther.length}/50 characters
-                    </p>
-                  </div>
-                )}
-              </div>
+              {formData.timeCommitment === 'Other' && (
+                <div className="mt-4">
+                  <input
+                    type="text"
+                    placeholder="Please specify your availability"
+                    value={formData.timeCommitmentOther}
+                    onChange={(e) => setFormData({
+                      ...formData,
+                      timeCommitmentOther: e.target.value.slice(0, 50)
+                    })}
+                    maxLength={50}
+                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-[#4F46E5] text-lg"
+                  />
+                  <p className="text-sm text-gray-500 mt-1">
+                    {formData.timeCommitmentOther.length}/50 characters
+                  </p>
+                </div>
+              )}
             </fieldset>
           )}
 
