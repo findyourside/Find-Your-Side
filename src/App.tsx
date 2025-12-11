@@ -5,6 +5,7 @@ import IdeaForm from './IdeaForm';
 import BusinessIdeasResults from './BusinessIdeasResults';
 import PlaybookDisplay from './PlaybookDisplay';
 import FAQ from './FAQ';
+import Disclaimer from './Disclaimer';
 import WaitlistSignup from './WaitlistSignup';
 import { analytics } from './lib/analytics';
 
@@ -65,6 +66,12 @@ interface Playbook {
   weeks: Week[];
 }
 
+interface LimitModalState {
+  show: boolean;
+  type: 'ideas' | 'playbooks' | null;
+  reason: 'ip_limit' | 'email_limit' | null;
+}
+
 type ViewType = 'home' | 'quiz' | 'ideaForm' | 'generatingIdeas' | 'showingIdeas' | 'generatingPlaybook' | 'showingPlaybook';
 
 function App() {
@@ -80,6 +87,11 @@ function App() {
   const [showWaitlist, setShowWaitlist] = useState(false);
   const [waitlistReason, setWaitlistReason] = useState<'playbook_limit' | 'monthly_limit'>('playbook_limit');
   const [showIdeaLimitModal, setShowIdeaLimitModal] = useState(false);
+  const [limitModal, setLimitModal] = useState<LimitModalState>({
+    show: false,
+    type: null,
+    reason: null,
+  });
 
   const handleStartQuiz = () => {
     analytics.quizStarted();
@@ -107,6 +119,18 @@ function App() {
       const result = await response.json();
 
       if (!response.ok) {
+        // Handle 429 limit errors
+        if (response.status === 429) {
+          if (result.reason === 'ip_limit') {
+            setLimitModal({ show: true, type: 'ideas', reason: 'ip_limit' });
+            setCurrentView('home');
+            return;
+          } else if (result.reason === 'email_limit') {
+            setLimitModal({ show: true, type: 'ideas', reason: 'email_limit' });
+            setCurrentView('home');
+            return;
+          }
+        }
         if (result.blocked && result.reason === 'monthly_limit') {
           analytics.monthlyCapReached();
           setWaitlistReason('monthly_limit');
@@ -166,6 +190,18 @@ function App() {
       const result = await response.json();
 
       if (!response.ok) {
+        // Handle 429 limit errors
+        if (response.status === 429) {
+          if (result.reason === 'ip_limit') {
+            setLimitModal({ show: true, type: 'playbooks', reason: 'ip_limit' });
+            setCurrentView('home');
+            return;
+          } else if (result.reason === 'email_limit') {
+            setLimitModal({ show: true, type: 'playbooks', reason: 'email_limit' });
+            setCurrentView('home');
+            return;
+          }
+        }
         if (result.blocked && result.reason === 'monthly_limit') {
           analytics.monthlyCapReached();
           setWaitlistReason('monthly_limit');
@@ -233,6 +269,18 @@ function App() {
       const result = await response.json();
 
       if (!response.ok) {
+        // Handle 429 limit errors
+        if (response.status === 429) {
+          if (result.reason === 'ip_limit') {
+            setLimitModal({ show: true, type: 'playbooks', reason: 'ip_limit' });
+            setCurrentView('showingIdeas');
+            return;
+          } else if (result.reason === 'email_limit') {
+            setLimitModal({ show: true, type: 'playbooks', reason: 'email_limit' });
+            setCurrentView('showingIdeas');
+            return;
+          }
+        }
         if (result.blocked && result.reason === 'monthly_limit') {
           analytics.monthlyCapReached();
           setWaitlistReason('monthly_limit');
@@ -317,6 +365,8 @@ function App() {
 
   return (
     <div className="min-h-screen bg-white">
+      {limitModal.show && <LimitModal type={limitModal.type} reason={limitModal.reason} onClose={() => setLimitModal({ show: false, type: null, reason: null })} />}
+
       {showWaitlist && (
         <WaitlistSignup
           userEmail={quizData?.email || ideaData?.email}
@@ -527,6 +577,8 @@ function App() {
 
       <FAQ />
 
+      <Disclaimer />
+
       <footer className="border-t border-gray-200" style={{ backgroundColor: '#1a1f3a' }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="text-center mb-3">
@@ -538,10 +590,7 @@ function App() {
           </div>
           <div className="text-center">
             <p className="text-gray-300 text-sm mb-2">
-              <a href="/privacy" className="text-indigo-400 hover:text-indigo-300 transition-colors">Privacy Policy</a> | 
-              <a href="/terms" className="text-indigo-400 hover:text-indigo-300 transition-colors"> Terms</a> | 
-              <a href="/cookies" className="text-indigo-400 hover:text-indigo-300 transition-colors"> Cookie Policy</a> | 
-              <a href="/disclaimer" className="text-indigo-400 hover:text-indigo-300 transition-colors"> Disclaimer</a> |{' '}
+              Privacy Policy | Terms | Cookie Policy |{' '}
               <a
                 href="mailto:hello.findyourside@gmail.com"
                 className="text-indigo-400 hover:text-indigo-300 transition-colors"
@@ -611,6 +660,60 @@ function GeneratingPlaybookView() {
         <p className="text-center text-gray-600 mb-4">This won't take long.</p>
         {elapsedTime > 15 && <p className="text-center text-sm text-gray-500">Still working... ({elapsedTime}s)</p>}
         <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+      </div>
+    </div>
+  );
+}
+
+interface LimitModalProps {
+  type: 'ideas' | 'playbooks' | null;
+  reason: 'ip_limit' | 'email_limit' | null;
+  onClose: () => void;
+}
+
+function LimitModal({ type, reason, onClose }: LimitModalProps) {
+  if (!type || !reason) return null;
+
+  const isIPLimit = reason === 'ip_limit';
+  const isIdeas = type === 'ideas';
+
+  const ideasMessage = "You've used up your free 2 personalized idea sets. Come back for 2 more free sets next month.";
+  const playbooksMessage = "You've used up your free 2 action plans. Come back for 2 more free plans next month.";
+  const ipMessage = "Too many requests from this location. Please try again tomorrow.";
+
+  const message = isIPLimit 
+    ? ipMessage 
+    : (isIdeas ? ideasMessage : playbooksMessage);
+
+  const heading = isIPLimit
+    ? 'Daily Limit Reached'
+    : (isIdeas ? 'Idea Sets Used' : 'Action Plans Used');
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-2xl shadow-2xl max-w-sm w-full bg-white rounded-2xl shadow-lg p-8">
+        <h2 className="text-2xl font-bold text-gray-900 mb-4 text-center">
+          {heading}
+        </h2>
+        
+        <p className="text-gray-700 mb-8 leading-relaxed text-center">
+          {message}
+        </p>
+
+        <div className="space-y-3">
+          <button
+            onClick={onClose}
+            className="w-full px-6 py-3 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 transition-all"
+          >
+            Back to Home
+          </button>
+          <button
+            onClick={onClose}
+            className="w-full px-6 py-3 text-indigo-600 font-semibold rounded-lg border-2 border-indigo-600 hover:bg-indigo-50 transition-all"
+          >
+            Send Feedback
+          </button>
+        </div>
       </div>
     </div>
   );
