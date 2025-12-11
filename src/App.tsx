@@ -359,7 +359,7 @@ function App() {
         </div>
       )}
 
-      <section className="relative" style={{ backgroundColor: '#1a1f3a', paddingTop: '16px', paddingBottom: '32px' }}>
+      <section className="relative" style={{ backgroundColor: '#1a1f3a', paddingTop: '8px', paddingBottom: '24px' }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <div className="flex items-center justify-center" style={{ marginBottom: '20px' }}>
@@ -526,6 +526,19 @@ function App() {
       </section>
 
       <FAQ />
+
+      <footer className="border-t border-gray-200 mt-12 py-8 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center">
+            <p className="text-gray-600 text-sm mb-4">
+              Privacy Policy | Terms | Cookie Policy | Contact
+            </p>
+            <p className="text-gray-500 text-xs">
+              © 2025 Find Your Side. All rights reserved.
+            </p>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }
