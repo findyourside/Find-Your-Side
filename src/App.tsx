@@ -577,8 +577,8 @@ function App() {
       <FAQ />
 
       <footer className="border-t border-gray-200" style={{ backgroundColor: '#1a1f3a' }}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="text-center mb-2">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <div className="text-center mb-3">
             <img
               src="/Find your side.svg"
               alt="Find Your Side"
@@ -586,7 +586,7 @@ function App() {
             />
           </div>
           <div className="text-center">
-            <p className="text-gray-300 text-sm mb-2">
+            <p className="text-gray-300 text-xs mb-1">
               <a href="/privacy" className="text-indigo-400 hover:text-indigo-300 transition-colors">Privacy Policy</a> | 
               <a href="/terms" className="text-indigo-400 hover:text-indigo-300 transition-colors"> Terms</a> | 
               <a href="/cookies" className="text-indigo-400 hover:text-indigo-300 transition-colors"> Cookie Policy</a> | 
