@@ -5,7 +5,6 @@ import IdeaForm from './IdeaForm';
 import BusinessIdeasResults from './BusinessIdeasResults';
 import PlaybookDisplay from './PlaybookDisplay';
 import FAQ from './FAQ';
-import Disclaimer from './Disclaimer';
 import WaitlistSignup from './WaitlistSignup';
 import { analytics } from './lib/analytics';
 
@@ -413,7 +412,7 @@ function App() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <div className="flex items-center justify-center" style={{ marginBottom: '20px' }}>
-              <img src="/Find your side.svg" alt="Find Your Side - Idea to Execution" className="w-[240px] sm:w-[340px] h-auto" />
+              <img src="/Find-your-side-logo.svg" alt="Find Your Side - Idea to Execution" className="w-[240px] sm:w-[340px] h-auto" />
             </div>
 
             <h1 className="font-bold text-white tracking-tight" style={{ marginBottom: '12px', fontSize: '48px' }}>
@@ -577,20 +576,14 @@ function App() {
 
       <FAQ />
 
-      <Disclaimer />
-
       <footer className="border-t border-gray-200" style={{ backgroundColor: '#1a1f3a' }}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="text-center mb-3">
-            <img
-              src="/Find your side.svg"
-              alt="Find Your Side"
-              className="w-[240px] h-auto mx-auto"
-            />
-          </div>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="text-center">
             <p className="text-gray-300 text-sm mb-2">
-              Privacy Policy | Terms | Cookie Policy |{' '}
+              <a href="/privacy" className="text-indigo-400 hover:text-indigo-300 transition-colors">Privacy Policy</a> | 
+              <a href="/terms" className="text-indigo-400 hover:text-indigo-300 transition-colors"> Terms</a> | 
+              <a href="/cookies" className="text-indigo-400 hover:text-indigo-300 transition-colors"> Cookie Policy</a> | 
+              <a href="/disclaimer" className="text-indigo-400 hover:text-indigo-300 transition-colors"> Disclaimer</a> |{' '}
               <a
                 href="mailto:hello.findyourside@gmail.com"
                 className="text-indigo-400 hover:text-indigo-300 transition-colors"
