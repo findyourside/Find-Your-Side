@@ -107,8 +107,10 @@ export default function Quiz({ onComplete, onBack }: QuizProps) {
         setIsSubmitting(false);
         analytics.emailCaptured('quiz');
         analytics.quizCompleted();
-        onComplete(formData);
       }
+      
+      // Call onComplete AFTER fetch completes (moved outside finally)
+      onComplete(formData);
     }
   };
 
