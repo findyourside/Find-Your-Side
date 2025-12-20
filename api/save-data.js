@@ -27,7 +27,7 @@ export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST,OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-  
+
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
@@ -40,14 +40,14 @@ export default async function handler(req, res) {
   try {
     const client = await connectToDatabase();
     const db = client.db('findyourside');
-
     let collection;
     let document;
 
     switch (type) {
       case 'quiz':
-        collection = db.collection('quiz_responses');
+        collection = db.collection('findyourside');
         document = {
+          type: 'quiz',
           email,
           skills: data.skills,
           skillsOther: data.skillsOther,
@@ -65,12 +65,13 @@ export default async function handler(req, res) {
         break;
 
       case 'playbook_feedback':
-        collection = db.collection('playbook_feedback');
+        collection = db.collection('findyourside');
         document = {
+          type: 'playbook_feedback',
           email,
           playbookId: data.playbookId,
           businessName: data.businessName,
-          feedback: data.feedback, // Array of feedback options
+          feedback: data.feedback,
           additionalComments: data.additionalComments,
           timestamp: new Date(),
           source: 'playbook_download'
@@ -78,10 +79,11 @@ export default async function handler(req, res) {
         break;
 
       case 'idea_limit_feedback':
-        collection = db.collection('idea_limit_feedback');
+        collection = db.collection('findyourside');
         document = {
+          type: 'idea_limit_feedback',
           email,
-          selectedFeedback: data.selectedFeedback, // Array: ['not-relevant', 'confusing-process', etc.]
+          selectedFeedback: data.selectedFeedback,
           otherFeedback: data.otherFeedback,
           timestamp: new Date(),
           source: 'idea_limit_modal',
@@ -90,8 +92,9 @@ export default async function handler(req, res) {
         break;
 
       case 'playbook_generation':
-        collection = db.collection('playbook_generations');
+        collection = db.collection('findyourside');
         document = {
+          type: 'playbook_generation',
           email,
           idea: data.idea,
           timeCommitment: data.timeCommitment,
@@ -108,7 +111,6 @@ export default async function handler(req, res) {
     }
 
     const result = await collection.insertOne(document);
-
     console.log(`Saved ${type} data:`, result.insertedId);
 
     return res.status(200).json({
@@ -116,7 +118,6 @@ export default async function handler(req, res) {
       id: result.insertedId,
       message: `${type} data saved successfully`
     });
-
   } catch (error) {
     console.error('Database error:', error);
     return res.status(500).json({
