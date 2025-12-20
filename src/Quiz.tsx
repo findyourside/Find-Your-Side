@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { supabase } from './lib/supabase';
 import { analytics } from './lib/analytics';
 
 interface QuizData {
@@ -71,22 +70,28 @@ export default function Quiz({ onComplete, onBack }: QuizProps) {
     } else {
       setIsSubmitting(true);
       try {
-        const { error } = await supabase.from('quiz_responses').insert({
-          email: formData.email,
-          skills: formData.skills,
-          skills_other: formData.skillsOther || null,
-          time_commitment: formData.timeCommitment,
-          time_commitment_other: formData.timeCommitmentOther || null,
-          budget: null,
-          interests: formData.interests,
-          interests_other: formData.interestsOther || null,
-          goal: formData.goal,
-          goal_other: formData.goalOther || null,
-          experience: formData.experience,
+        const response = await fetch('/api/save-data', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            type: 'quiz',
+            email: formData.email,
+            data: {
+              skills: formData.skills,
+              skillsOther: formData.skillsOther,
+              timeCommitment: formData.timeCommitment,
+              timeCommitmentOther: formData.timeCommitmentOther,
+              interests: formData.interests,
+              interestsOther: formData.interestsOther,
+              goal: formData.goal,
+              goalOther: formData.goalOther,
+              experience: formData.experience,
+            }
+          }),
         });
 
-        if (error) {
-          console.error('Error saving quiz response:', error);
+        if (!response.ok) {
+          console.error('Error saving quiz response');
         }
 
         analytics.emailCaptured('quiz');
