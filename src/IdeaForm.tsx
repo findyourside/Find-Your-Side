@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { ChevronLeft } from 'lucide-react';
-import { supabase } from './lib/supabase';
 import { analytics } from './lib/analytics';
 
 interface IdeaFormData {
@@ -106,6 +105,8 @@ export default function IdeaForm({ onComplete, onBack }: IdeaFormProps) {
     setIsSubmitting(true);
 
     try {
+      console.log('Saving idea form data...');
+
       const businessTypeValue = formData.businessType === 'Other'
         ? formData.businessTypeOther
         : formData.businessType;
@@ -114,25 +115,41 @@ export default function IdeaForm({ onComplete, onBack }: IdeaFormProps) {
         ? formData.timeCommitmentOther
         : formData.timeCommitment;
 
-      const { error } = await supabase.from('idea_submissions').insert({
-        business_idea: `Business Type: ${businessTypeValue}\nProblem: ${formData.problemSolving}\nTarget Customer: ${formData.targetCustomer}`,
-        time_commitment: timeCommitmentValue,
-        budget: null,
-        skills_experience: formData.skillsExperience || null,
-        email: formData.email,
+      const response = await fetch('/api/save-data', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: 'idea_form',
+          email: formData.email,
+          data: {
+            businessType: businessTypeValue,
+            problemSolving: formData.problemSolving,
+            targetCustomer: formData.targetCustomer,
+            timeCommitment: timeCommitmentValue,
+            skillsExperience: formData.skillsExperience,
+          }
+        }),
       });
 
-      if (error) {
-        console.error('Error saving idea submission:', error);
+      const responseData = await response.json();
+      console.log('Save response:', responseData);
+
+      if (!response.ok) {
+        console.error('Error saving idea form:', responseData);
+      } else {
+        console.log('Idea form saved successfully!');
       }
 
+    } catch (err) {
+      console.error('Save error:', err);
+    } finally {
+      setIsSubmitting(false);
       analytics.emailCaptured('idea_form');
       analytics.ideaFormCompleted();
-      onComplete(formData);
-    } catch (err) {
-      console.error('Error:', err);
-      setIsSubmitting(false);
     }
+
+    // Call onComplete AFTER fetch completes (moved outside finally)
+    onComplete(formData);
   };
 
   const problemCharCount = getCharacterCount(formData.problemSolving);
