@@ -70,48 +70,42 @@ export default function Quiz({ onComplete, onBack }: QuizProps) {
     } else {
       setIsSubmitting(true);
       try {
-        console.log('Sending quiz data to save-data API...');
-        
-        const payload = {
-          type: 'quiz',
-          email: formData.email,
-          data: {
-            skills: formData.skills,
-            skillsOther: formData.skillsOther,
-            timeCommitment: formData.timeCommitment,
-            timeCommitmentOther: formData.timeCommitmentOther,
-            interests: formData.interests,
-            interestsOther: formData.interestsOther,
-            goal: formData.goal,
-            goalOther: formData.goalOther,
-            experience: formData.experience,
-          }
-        };
-        
-        console.log('Payload:', payload);
+        console.log('Saving quiz data...');
         
         const response = await fetch('/api/save-data', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload),
+          body: JSON.stringify({
+            type: 'quiz',
+            email: formData.email,
+            data: {
+              skills: formData.skills,
+              skillsOther: formData.skillsOther,
+              timeCommitment: formData.timeCommitment,
+              timeCommitmentOther: formData.timeCommitmentOther,
+              interests: formData.interests,
+              interestsOther: formData.interestsOther,
+              goal: formData.goal,
+              goalOther: formData.goalOther,
+              experience: formData.experience,
+            }
+          }),
         });
 
-        console.log('Response status:', response.status);
-        
         const responseData = await response.json();
-        console.log('Save-data response:', responseData);
+        console.log('Save response:', responseData);
 
         if (!response.ok) {
-          console.error('Error saving quiz response:', responseData);
+          console.error('Error saving quiz:', responseData);
         } else {
-          console.log('Quiz data saved successfully!');
+          console.log('Quiz saved successfully!');
         }
 
-        analytics.emailCaptured('quiz');
       } catch (err) {
-        console.error('Fetch error:', err);
+        console.error('Save error:', err);
       } finally {
         setIsSubmitting(false);
+        analytics.emailCaptured('quiz');
         analytics.quizCompleted();
         onComplete(formData);
       }
