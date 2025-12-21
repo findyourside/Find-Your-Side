@@ -1,4 +1,4 @@
-import { ChevronLeft, Lightbulb } from 'lucide-react';
+import { ChevronLeft } from 'lucide-react';
 import GenerationCounter from './GenerationCounter';
 
 interface BusinessIdea {
@@ -65,20 +65,9 @@ export default function BusinessIdeasResults({ ideas, onSelectIdea, onBack, idea
               onMouseLeave={(e) => e.currentTarget.style.borderColor = '#E5E7EB'}
             >
               <h3 className="text-xl font-bold text-gray-900 mb-4">{idea.name}</h3>
-
               <div className="mb-6 flex-grow">
                 <p className="text-sm font-semibold text-gray-700 mb-2">Why this fits you:</p>
                 <p className="text-gray-600 text-sm leading-relaxed">{idea.whyItFits}</p>
-              </div>
-
-              <div className="rounded-lg p-3 mb-4" style={{ backgroundColor: '#FEF3C7' }}>
-                <div className="flex items-start space-x-2">
-                  <Lightbulb className="w-4 h-4 text-yellow-700 flex-shrink-0 mt-0.5" />
-                  <div>
-                    <p className="text-xs font-semibold text-yellow-900 mb-1">First step to validate:</p>
-                    <p className="text-sm text-yellow-800">{idea.firstStep}</p>
-                  </div>
-                </div>
               </div>
 
               <button
