@@ -35,10 +35,11 @@ export default async function handler(req, res) {
   }
 
   // ===== LIMIT 2: EMAIL ADDRESS - 2 action plans per month =====
+  const EXEMPT_EMAIL = 'hello.findyourside@gmail.com';
   const ideaFormData = req.body.ideaFormData;
   const userEmail = ideaFormData?.email || req.body.userEmail;
 
-  if (userEmail) {
+  if (userEmail && userEmail.toLowerCase() !== EXEMPT_EMAIL) {
     const currentMonth = new Date().toISOString().slice(0, 7); // YYYY-MM
     const emailLimitKey = `playbook-${userEmail}-${currentMonth}`;
 
@@ -53,7 +54,7 @@ export default async function handler(req, res) {
     if (global.emailLimitStore[emailLimitKey] > 2) {
       return res.status(429).json({
         error: 'Monthly limit reached',
-        message: "You've used up your free 2 action plans. Come back for 2 more free plans next month.",
+        message: "You've used up your free 2 action plans. Come back next month for 2 more free plans.",
         blocked: true,
         reason: 'email_limit',
         limitType: 'playbooks'
@@ -147,6 +148,24 @@ Return ONLY valid JSON (no markdown):
     if (!playbook.businessName || !playbook.overview || !playbook.weeks) {
       console.error('Invalid structure:', Object.keys(playbook));
       return res.status(500).json({ error: 'Invalid playbook structure' });
+    }
+
+    // Save idea form data to Airtable if from "I Have An Idea" form
+    if (ideaFormData) {
+      try {
+        await fetch(`${req.headers['x-forwarded-proto'] || 'https'}://${req.headers.host}/api/save-data`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            type: 'idea_form',
+            email: userEmail,
+            data: ideaFormData
+          }),
+        });
+      } catch (err) {
+        console.error('Error saving idea form data:', err);
+        // Don't fail the request if saving fails
+      }
     }
 
     return res.status(200).json({ playbook });
