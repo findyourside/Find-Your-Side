@@ -36,6 +36,7 @@ interface IdeaFormData {
 }
 
 interface BusinessIdea {
+  id?: number;
   name: string;
   whyItFits: string;
   timeRequired: string;
@@ -69,6 +70,7 @@ interface LimitModalState {
   show: boolean;
   type: 'ideas' | 'playbooks' | null;
   reason: 'ip_limit' | 'email_limit' | null;
+  userEmail?: string;
 }
 
 type ViewType = 'home' | 'quiz' | 'ideaForm' | 'generatingIdeas' | 'showingIdeas' | 'generatingPlaybook' | 'showingPlaybook';
@@ -85,7 +87,6 @@ function App() {
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [showWaitlist, setShowWaitlist] = useState(false);
   const [waitlistReason, setWaitlistReason] = useState<'playbook_limit' | 'monthly_limit'>('playbook_limit');
-  const [showIdeaLimitModal, setShowIdeaLimitModal] = useState(false);
   const [limitModal, setLimitModal] = useState<LimitModalState>({
     show: false,
     type: null,
@@ -121,11 +122,11 @@ function App() {
         // Handle 429 limit errors
         if (response.status === 429) {
           if (result.reason === 'ip_limit') {
-            setLimitModal({ show: true, type: 'ideas', reason: 'ip_limit' });
+            setLimitModal({ show: true, type: 'ideas', reason: 'ip_limit', userEmail: data.email });
             setCurrentView('home');
             return;
           } else if (result.reason === 'email_limit') {
-            setLimitModal({ show: true, type: 'ideas', reason: 'email_limit' });
+            setLimitModal({ show: true, type: 'ideas', reason: 'email_limit', userEmail: data.email });
             setCurrentView('home');
             return;
           }
@@ -139,7 +140,7 @@ function App() {
         }
         if (result.blocked && result.reason === 'idea_limit') {
           analytics.ideaLimitReached();
-          setShowIdeaLimitModal(true);
+          setLimitModal({ show: true, type: 'ideas', reason: 'email_limit', userEmail: data.email });
           setCurrentView('home');
           return;
         }
@@ -192,11 +193,11 @@ function App() {
         // Handle 429 limit errors
         if (response.status === 429) {
           if (result.reason === 'ip_limit') {
-            setLimitModal({ show: true, type: 'playbooks', reason: 'ip_limit' });
+            setLimitModal({ show: true, type: 'playbooks', reason: 'ip_limit', userEmail: data.email });
             setCurrentView('home');
             return;
           } else if (result.reason === 'email_limit') {
-            setLimitModal({ show: true, type: 'playbooks', reason: 'email_limit' });
+            setLimitModal({ show: true, type: 'playbooks', reason: 'email_limit', userEmail: data.email });
             setCurrentView('home');
             return;
           }
@@ -210,8 +211,7 @@ function App() {
         }
         if (result.blocked && result.reason === 'playbook_limit') {
           analytics.playbookLimitReached();
-          setWaitlistReason('playbook_limit');
-          setShowWaitlist(true);
+          setLimitModal({ show: true, type: 'playbooks', reason: 'email_limit', userEmail: data.email });
           setCurrentView('home');
           return;
         }
@@ -271,11 +271,11 @@ function App() {
         // Handle 429 limit errors
         if (response.status === 429) {
           if (result.reason === 'ip_limit') {
-            setLimitModal({ show: true, type: 'playbooks', reason: 'ip_limit' });
+            setLimitModal({ show: true, type: 'playbooks', reason: 'ip_limit', userEmail: quizData?.email });
             setCurrentView('showingIdeas');
             return;
           } else if (result.reason === 'email_limit') {
-            setLimitModal({ show: true, type: 'playbooks', reason: 'email_limit' });
+            setLimitModal({ show: true, type: 'playbooks', reason: 'email_limit', userEmail: quizData?.email });
             setCurrentView('showingIdeas');
             return;
           }
@@ -289,8 +289,7 @@ function App() {
         }
         if (result.blocked && result.reason === 'playbook_limit') {
           analytics.playbookLimitReached();
-          setWaitlistReason('playbook_limit');
-          setShowWaitlist(true);
+          setLimitModal({ show: true, type: 'playbooks', reason: 'email_limit', userEmail: quizData?.email });
           setCurrentView('showingIdeas');
           return;
         }
@@ -364,7 +363,16 @@ function App() {
 
   return (
     <div className="min-h-screen bg-white">
-      {limitModal.show && <LimitModal type={limitModal.type} reason={limitModal.reason} onClose={() => setLimitModal({ show: false, type: null, reason: null })} />}
+      {limitModal.show && (
+        <LimitModal 
+          type={limitModal.type} 
+          reason={limitModal.reason}
+          userEmail={limitModal.userEmail}
+          ideas={businessIdeas}
+          onSelectIdea={handleSelectIdea}
+          onClose={() => setLimitModal({ show: false, type: null, reason: null })}
+        />
+      )}
 
       {showWaitlist && (
         <WaitlistSignup
@@ -372,22 +380,6 @@ function App() {
           onClose={() => setShowWaitlist(false)}
           reason={waitlistReason}
         />
-      )}
-
-      {showIdeaLimitModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">You've generated your 2 idea sets!</h2>
-            <p className="text-gray-600 mb-4">That's 10 personalized ideas total! Want to generate action plans for your favorite ideas?</p>
-            <p className="text-gray-700 font-semibold mb-6">You have {playbooksRemaining} action plan generations remaining.</p>
-            <button
-              onClick={() => setShowIdeaLimitModal(false)}
-              className="w-full px-6 py-3 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 transition-all"
-            >
-              Back to Ideas
-            </button>
-          </div>
-        </div>
       )}
 
       {error && (
@@ -668,55 +660,269 @@ function GeneratingPlaybookView() {
 interface LimitModalProps {
   type: 'ideas' | 'playbooks' | null;
   reason: 'ip_limit' | 'email_limit' | null;
+  userEmail?: string;
+  ideas: BusinessIdea[];
+  onSelectIdea: (idea: BusinessIdea) => void;
   onClose: () => void;
 }
 
-function LimitModal({ type, reason, onClose }: LimitModalProps) {
+function LimitModal({ type, reason, userEmail, ideas, onSelectIdea, onClose }: LimitModalProps) {
+  const [showFeedback, setShowFeedback] = useState(false);
+  const [showIdeas, setShowIdeas] = useState(false);
+  const [selectedIdea, setSelectedIdea] = useState<BusinessIdea | null>(null);
+  const [feedbackData, setFeedbackData] = useState({
+    selectedFeedback: [] as string[],
+    otherFeedback: '',
+  });
+  const [isSubmittingFeedback, setIsSubmittingFeedback] = useState(false);
+
   if (!type || !reason) return null;
 
   const isIPLimit = reason === 'ip_limit';
   const isIdeas = type === 'ideas';
 
-  const ideasMessage = "You've used up your free 2 personalized idea sets. Come back for 2 more free sets next month.";
-  const playbooksMessage = "You've used up your free 2 action plans. Come back for 2 more free plans next month.";
-  const ipMessage = "Too many requests from this location. Please try again tomorrow.";
-
-  const message = isIPLimit 
-    ? ipMessage 
-    : (isIdeas ? ideasMessage : playbooksMessage);
-
-  const heading = isIPLimit
-    ? 'Daily Limit Reached'
-    : (isIdeas ? 'Idea Sets Used' : 'Action Plans Used');
-
-  return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl shadow-2xl max-w-sm w-full bg-white rounded-2xl shadow-lg p-8">
-        <h2 className="text-2xl font-bold text-gray-900 mb-4 text-center">
-          {heading}
-        </h2>
-        
-        <p className="text-gray-700 mb-8 leading-relaxed text-center">
-          {message}
-        </p>
-
-        <div className="space-y-3">
-          <button
-            onClick={onClose}
-            className="w-full px-6 py-3 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 transition-all"
-          >
-            Back to Home
-          </button>
-          <button
-            onClick={onClose}
-            className="w-full px-6 py-3 text-indigo-600 font-semibold rounded-lg border-2 border-indigo-600 hover:bg-indigo-50 transition-all"
-          >
-            Send Feedback
-          </button>
+  // IP Limit Message
+  if (isIPLimit) {
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div className="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-8">
+          <h2 className="text-2xl font-bold text-gray-900 mb-4 text-center">Daily Limit Reached</h2>
+          <p className="text-gray-700 mb-8 leading-relaxed text-center">You've reached your 10 daily requests from this location. Please try again tomorrow. If you have questions, we'd love to hear from you.</p>
+          <div className="space-y-3">
+            <button
+              onClick={() => setShowFeedback(true)}
+              className="w-full px-6 py-3 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 transition-all"
+            >
+              Send Feedback
+            </button>
+            <button
+              onClick={onClose}
+              className="w-full px-6 py-3 text-gray-700 font-semibold rounded-lg border-2 border-gray-300 hover:bg-gray-50 transition-all"
+            >
+              Close
+            </button>
+          </div>
         </div>
       </div>
-    </div>
-  );
+    );
+  }
+
+  // Email Limit - View Ideas Flow
+  if (!showIdeas) {
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div className="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-8">
+          <h2 className="text-2xl font-bold text-gray-900 mb-4 text-center">Monthly Limit Reached</h2>
+          <p className="text-gray-700 mb-8 leading-relaxed text-center">You've used your 2 free {isIdeas ? 'idea sets' : 'action plans'} for this month. You have {ideas.length} great ideas to choose from. Pick one, create an action plan, or come back next month for more ideas.</p>
+          <div className="space-y-3">
+            {ideas.length > 0 ? (
+              <button
+                onClick={() => setShowIdeas(true)}
+                className="w-full px-6 py-3 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 transition-all"
+              >
+                View My Ideas
+              </button>
+            ) : null}
+            <button
+              onClick={() => setShowFeedback(true)}
+              className="w-full px-6 py-3 text-indigo-600 font-semibold rounded-lg border-2 border-indigo-600 hover:bg-indigo-50 transition-all"
+            >
+              Send Feedback
+            </button>
+            <button
+              onClick={onClose}
+              className="w-full px-6 py-3 text-gray-700 font-semibold rounded-lg border-2 border-gray-300 hover:bg-gray-50 transition-all"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Show Ideas View
+  if (showIdeas && !selectedIdea) {
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full p-8 max-h-[85vh] overflow-y-auto">
+          <h2 className="text-2xl font-bold text-gray-900 mb-2 text-center">Select an Idea for Your Action Plan</h2>
+          <p className="text-gray-600 text-center mb-6 text-sm">Click on any idea to create a detailed 4-week action plan</p>
+          
+          <div className="space-y-3 mb-6">
+            {ideas.map((idea, idx) => (
+              <button
+                key={idx}
+                onClick={() => setSelectedIdea(idea)}
+                className="w-full text-left border-2 border-gray-200 rounded-lg p-4 hover:border-indigo-600 hover:bg-indigo-50 transition-all"
+              >
+                <h4 className="font-semibold text-gray-900 mb-1">{idea.name}</h4>
+                <p className="text-sm text-gray-600 mb-2">{idea.whyItFits}</p>
+                <p className="text-xs text-indigo-600 font-medium">{idea.firstStep}</p>
+              </button>
+            ))}
+          </div>
+
+          <div className="space-y-3">
+            <button
+              onClick={() => setShowIdeas(false)}
+              className="w-full px-6 py-3 text-gray-700 font-semibold rounded-lg border-2 border-gray-300 hover:bg-gray-50 transition-all"
+            >
+              Back
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Create Action Plan from Selected Idea
+  if (selectedIdea) {
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full p-8">
+          <h3 className="text-xl font-bold text-gray-900 mb-4">Creating Action Plan</h3>
+          <p className="text-gray-700 mb-6">{selectedIdea.name}</p>
+          <p className="text-sm text-gray-600 mb-6">{selectedIdea.whyItFits}</p>
+          
+          <div className="space-y-3">
+            <button
+              onClick={() => {
+                onSelectIdea(selectedIdea);
+                onClose();
+              }}
+              className="w-full px-6 py-3 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 transition-all"
+            >
+              Create Action Plan
+            </button>
+            <button
+              onClick={() => setSelectedIdea(null)}
+              className="w-full px-6 py-3 text-gray-700 font-semibold rounded-lg border-2 border-gray-300 hover:bg-gray-50 transition-all"
+            >
+              Choose Different Idea
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Feedback Form
+  if (showFeedback) {
+    const feedbackOptions = [
+      'Ideas weren\'t relevant',
+      'Process was confusing',
+      'Want to try again next month',
+      'Would pay for more',
+      'Other'
+    ];
+
+    const handleFeedbackSubmit = async () => {
+      if (!userEmail?.trim()) {
+        alert('Please enter your email');
+        return;
+      }
+
+      setIsSubmittingFeedback(true);
+      try {
+        const response = await fetch('/api/save-data', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            type: 'idea_limit_feedback',
+            email: userEmail,
+            data: feedbackData
+          }),
+        });
+
+        if (response.ok) {
+          alert('Thank you for your feedback!');
+          onClose();
+        } else {
+          alert('Error saving feedback. Please try again.');
+        }
+      } catch (err) {
+        console.error('Error:', err);
+        alert('Error saving feedback. Please try again.');
+      } finally {
+        setIsSubmittingFeedback(false);
+      }
+    };
+
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8 max-h-[85vh] overflow-y-auto">
+          <h2 className="text-2xl font-bold text-gray-900 mb-2 text-center">Help Us Improve</h2>
+          <p className="text-gray-600 text-center mb-6 text-sm">We'd love to hear what you think about Find Your Side</p>
+
+          <div className="space-y-3 mb-6">
+            {feedbackOptions.map((option) => (
+              <label key={option} className="flex items-center p-3 border-2 border-gray-200 rounded-lg cursor-pointer hover:border-indigo-400 transition-colors">
+                <input
+                  type="checkbox"
+                  checked={feedbackData.selectedFeedback.includes(option)}
+                  onChange={(e) => {
+                    if (e.target.checked) {
+                      setFeedbackData(prev => ({
+                        ...prev,
+                        selectedFeedback: [...prev.selectedFeedback, option]
+                      }));
+                    } else {
+                      setFeedbackData(prev => ({
+                        ...prev,
+                        selectedFeedback: prev.selectedFeedback.filter(f => f !== option)
+                      }));
+                    }
+                  }}
+                  className="w-4 h-4 rounded"
+                  style={{ accentColor: '#4F46E5' }}
+                />
+                <span className="ml-3 text-gray-700">{option}</span>
+              </label>
+            ))}
+          </div>
+
+          {feedbackData.selectedFeedback.includes('Other') && (
+            <textarea
+              value={feedbackData.otherFeedback}
+              onChange={(e) => setFeedbackData(prev => ({ ...prev, otherFeedback: e.target.value }))}
+              placeholder="Please tell us more..."
+              rows={3}
+              className="w-full px-4 py-3 mb-4 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-indigo-500 resize-none"
+            />
+          )}
+
+          <div className="mb-6">
+            <label className="block text-sm font-semibold text-gray-700 mb-2">Email</label>
+            <input
+              type="email"
+              value={userEmail || ''}
+              readOnly
+              className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg bg-gray-50"
+            />
+          </div>
+
+          <div className="space-y-3">
+            <button
+              onClick={handleFeedbackSubmit}
+              disabled={isSubmittingFeedback}
+              className="w-full px-6 py-3 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 transition-all disabled:bg-gray-300 disabled:cursor-not-allowed"
+            >
+              {isSubmittingFeedback ? 'Submitting...' : 'Submit Feedback'}
+            </button>
+            <button
+              onClick={() => setShowFeedback(false)}
+              className="w-full px-6 py-3 text-gray-700 font-semibold rounded-lg border-2 border-gray-300 hover:bg-gray-50 transition-all"
+            >
+              Back
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return null;
 }
 
 export default App;
