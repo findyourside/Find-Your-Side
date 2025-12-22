@@ -72,7 +72,7 @@ export default async function handler(req, res) {
         fields = {
           Email: email,
           'Selected Feedback': Array.isArray(data.selectedFeedback) ? data.selectedFeedback.join(', ') : data.selectedFeedback || '',
-          'Additional Comments': data.additionalComments || '',
+          'Additional Comments': data.otherFeedback || data.additionalComments || '',
           Timestamp: new Date().toISOString(),
           Type: 'action_plan_feedback'
         };
@@ -92,6 +92,14 @@ export default async function handler(req, res) {
       default:
         return res.status(400).json({ error: 'Invalid data type' });
     }
+
+    // ADDED: Logging for debugging
+    console.log(`Saving ${type} to Airtable:`, {
+      tableId,
+      fieldsCount: Object.keys(fields).length,
+      hasEmail: !!fields.Email,
+      timestamp: fields.Timestamp
+    });
 
     const response = await fetch(
       `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${tableId}`,
@@ -113,24 +121,37 @@ export default async function handler(req, res) {
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('Airtable error:', errorText);
-      return res.status(500).json({ error: 'Failed to save data to Airtable', details: errorText });
+      console.error(`Airtable error for ${type}:`, {
+        status: response.status,
+        statusText: response.statusText,
+        error: errorText
+      });
+      return res.status(response.status).json({ 
+        error: 'Failed to save data to Airtable', 
+        details: errorText,
+        type: type
+      });
     }
 
     const result = await response.json();
-    console.log(`Saved ${type} data to Airtable:`, result.records[0].id);
+    console.log(`✅ Saved ${type} to Airtable (ID: ${result.records[0].id})`);
 
     return res.status(200).json({
       success: true,
       id: result.records[0].id,
-      message: `${type} data saved successfully`
+      message: `${type} data saved successfully`,
+      type: type
     });
 
   } catch (error) {
-    console.error('Error:', error);
+    console.error(`Error saving ${type}:`, {
+      message: error.message,
+      stack: error.stack
+    });
     return res.status(500).json({
       error: 'Failed to save data',
-      details: error.message
+      details: error.message,
+      type: type
     });
   }
 }
