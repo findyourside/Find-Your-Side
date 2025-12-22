@@ -20,13 +20,21 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: 'Airtable credentials not configured' });
   }
 
+  // Table ID mappings
+  const TABLE_IDS = {
+    quiz: 'tblEdTSqfMjgtTnbi',
+    idea_form: 'tblNlieDwuh3Fuf2e',
+    action_plan_feedback: 'tbla9clfyA1JnbiFM',
+    idea_limit_feedback: 'tbloywxKj8pZ8mrhJ'
+  };
+
   try {
-    let tableName;
+    let tableId;
     let fields;
 
     switch (type) {
       case 'quiz':
-        tableName = 'quiz_responses';
+        tableId = TABLE_IDS.quiz;
         fields = {
           email: email,
           skills: Array.isArray(data.skills) ? data.skills.join(', ') : '',
@@ -44,7 +52,7 @@ export default async function handler(req, res) {
         break;
 
       case 'idea_form':
-        tableName = 'idea_form';
+        tableId = TABLE_IDS.idea_form;
         fields = {
           email: email,
           businessType: data.businessType || '',
@@ -60,7 +68,7 @@ export default async function handler(req, res) {
         break;
 
       case 'action_plan_feedback':
-        tableName = 'action_plan_feedback';
+        tableId = TABLE_IDS.action_plan_feedback;
         fields = {
           email: email,
           selectedFeedback: Array.isArray(data.selectedFeedback) ? data.selectedFeedback.join(', ') : data.selectedFeedback || '',
@@ -71,7 +79,7 @@ export default async function handler(req, res) {
         break;
 
       case 'idea_limit_feedback':
-        tableName = 'idea_limit_feedback';
+        tableId = TABLE_IDS.idea_limit_feedback;
         fields = {
           email: email,
           selectedFeedback: Array.isArray(data.selectedFeedback) ? data.selectedFeedback.join(', ') : data.selectedFeedback || '',
@@ -86,7 +94,7 @@ export default async function handler(req, res) {
     }
 
     const response = await fetch(
-      `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${tableName}`,
+      `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${tableId}`,
       {
         method: 'POST',
         headers: {
