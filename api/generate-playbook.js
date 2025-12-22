@@ -107,7 +107,8 @@ Return ONLY valid JSON (no markdown):
 
   try {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 55000);
+    // INCREASED TIMEOUT: 120 seconds (2 minutes) instead of 55 seconds
+    const timeoutId = setTimeout(() => controller.abort(), 120000);
 
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
