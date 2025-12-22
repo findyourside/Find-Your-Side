@@ -80,6 +80,7 @@ function App() {
   const [quizData, setQuizData] = useState<QuizData | null>(null);
   const [ideaData, setIdeaData] = useState<IdeaFormData | null>(null);
   const [businessIdeas, setBusinessIdeas] = useState<BusinessIdea[]>([]);
+  const [allBusinessIdeas, setAllBusinessIdeas] = useState<BusinessIdea[]>([]); // NEW: Accumulates all ideas
   const [playbook, setPlaybook] = useState<Playbook | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [ideaSetsRemaining, setIdeaSetsRemaining] = useState(2);
@@ -152,6 +153,7 @@ function App() {
       }
 
       setBusinessIdeas(result.ideas);
+      setAllBusinessIdeas(prev => [...prev, ...result.ideas]); // UPDATED: Accumulate ideas
       analytics.ideasGenerated(result.ideas.length);
 
       const newIdeaSetsRemaining = ideaSetsRemaining - 1;
@@ -245,6 +247,7 @@ function App() {
 
   const handleBackToHome = () => {
     setCurrentView('home');
+    setAllBusinessIdeas([]); // UPDATED: Clear accumulated ideas on back
   };
 
   const handleSelectIdea = async (idea: BusinessIdea) => {
@@ -368,7 +371,7 @@ function App() {
           type={limitModal.type} 
           reason={limitModal.reason}
           userEmail={limitModal.userEmail}
-          ideas={businessIdeas}
+          ideas={allBusinessIdeas}
           onSelectIdea={handleSelectIdea}
           onClose={() => setLimitModal({ show: false, type: null, reason: null })}
         />
@@ -758,7 +761,6 @@ function LimitModal({ type, reason, userEmail, ideas, onSelectIdea, onClose }: L
               >
                 <h4 className="font-semibold text-gray-900 mb-1">{idea.name}</h4>
                 <p className="text-sm text-gray-600 mb-2">{idea.whyItFits}</p>
-                <p className="text-xs text-indigo-600 font-medium">{idea.firstStep}</p>
               </button>
             ))}
           </div>
