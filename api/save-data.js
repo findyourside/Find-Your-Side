@@ -36,56 +36,56 @@ export default async function handler(req, res) {
       case 'quiz':
         tableId = TABLE_IDS.quiz;
         fields = {
-          email: email,
-          skills: Array.isArray(data.skills) ? data.skills.join(', ') : '',
-          skillsOther: data.skillsOther || '',
-          timeCommitment: data.timeCommitment || '',
-          timeCommitmentOther: data.timeCommitmentOther || '',
-          interests: Array.isArray(data.interests) ? data.interests.join(', ') : '',
-          interestsOther: data.interestsOther || '',
-          goal: data.goal || '',
-          goalOther: data.goalOther || '',
-          experience: data.experience || '',
-          timestamp: new Date().toISOString(),
-          type: 'quiz'
+          Email: email,
+          Skills: Array.isArray(data.skills) ? data.skills.join(', ') : '',
+          'Skills (Other)': data.skillsOther || '',
+          'Time Commitment': data.timeCommitment || '',
+          'Time Commitment (Other)': data.timeCommitmentOther || '',
+          Interests: Array.isArray(data.interests) ? data.interests.join(', ') : '',
+          'Interests (Other)': data.interestsOther || '',
+          Goal: data.goal || '',
+          'Goal (Other)': data.goalOther || '',
+          Experience: data.experience || '',
+          Timestamp: new Date().toISOString(),
+          Type: 'quiz'
         };
         break;
 
       case 'idea_form':
         tableId = TABLE_IDS.idea_form;
         fields = {
-          email: email,
-          businessType: data.businessType || '',
-          businessTypeOther: data.businessTypeOther || '',
-          problemSolving: data.problemSolving || '',
-          targetCustomer: data.targetCustomer || '',
-          timeCommitment: data.timeCommitment || '',
-          timeCommitmentOther: data.timeCommitmentOther || '',
-          skillsExperience: data.skillsExperience || '',
-          timestamp: new Date().toISOString(),
-          type: 'idea_form'
+          Email: email,
+          'Business Type': data.businessType || '',
+          'Business Type (Other)': data.businessTypeOther || '',
+          'Problem Solving': data.problemSolving || '',
+          'Target Customer': data.targetCustomer || '',
+          'Time Commitment': data.timeCommitment || '',
+          'Time Commitment (Other)': data.timeCommitmentOther || '',
+          'Skills Experience': data.skillsExperience || '',
+          Timestamp: new Date().toISOString(),
+          Type: 'idea_form'
         };
         break;
 
       case 'action_plan_feedback':
         tableId = TABLE_IDS.action_plan_feedback;
         fields = {
-          email: email,
-          selectedFeedback: Array.isArray(data.selectedFeedback) ? data.selectedFeedback.join(', ') : data.selectedFeedback || '',
-          additionalComments: data.additionalComments || '',
-          timestamp: new Date().toISOString(),
-          type: 'action_plan_feedback'
+          Email: email,
+          'Selected Feedback': Array.isArray(data.selectedFeedback) ? data.selectedFeedback.join(', ') : data.selectedFeedback || '',
+          'Additional Comments': data.additionalComments || '',
+          Timestamp: new Date().toISOString(),
+          Type: 'action_plan_feedback'
         };
         break;
 
       case 'idea_limit_feedback':
         tableId = TABLE_IDS.idea_limit_feedback;
         fields = {
-          email: email,
-          selectedFeedback: Array.isArray(data.selectedFeedback) ? data.selectedFeedback.join(', ') : data.selectedFeedback || '',
-          otherFeedback: data.otherFeedback || '',
-          timestamp: new Date().toISOString(),
-          type: 'idea_limit_feedback'
+          Email: email,
+          'Selected Feedback': Array.isArray(data.selectedFeedback) ? data.selectedFeedback.join(', ') : data.selectedFeedback || '',
+          'Other Feedback': data.otherFeedback || '',
+          Timestamp: new Date().toISOString(),
+          Type: 'idea_limit_feedback'
         };
         break;
 
