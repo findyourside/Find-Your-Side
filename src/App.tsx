@@ -35,6 +35,15 @@ interface IdeaFormData {
   budget?: string;
 }
 
+// NEW: Track idea form submissions
+interface IdeaFormSubmission {
+  businessType: string;
+  problemSolving: string;
+  targetCustomer: string;
+  timeCommitment: string;
+  skillsExperience: string;
+}
+
 interface BusinessIdea {
   id?: number;
   name: string;
@@ -66,11 +75,13 @@ interface Playbook {
   weeks: Week[];
 }
 
+// UPDATED: Add flowType to track which flow triggered limit
 interface LimitModalState {
   show: boolean;
   type: 'ideas' | 'playbooks' | null;
   reason: 'ip_limit' | 'email_limit' | null;
   userEmail?: string;
+  flowType?: 'quiz' | 'idea_form';
 }
 
 type ViewType = 'home' | 'quiz' | 'ideaForm' | 'generatingIdeas' | 'showingIdeas' | 'generatingPlaybook' | 'showingPlaybook';
@@ -80,7 +91,8 @@ function App() {
   const [quizData, setQuizData] = useState<QuizData | null>(null);
   const [ideaData, setIdeaData] = useState<IdeaFormData | null>(null);
   const [businessIdeas, setBusinessIdeas] = useState<BusinessIdea[]>([]);
-  const [allBusinessIdeas, setAllBusinessIdeas] = useState<BusinessIdea[]>([]); // NEW: Accumulates all ideas
+  const [allBusinessIdeas, setAllBusinessIdeas] = useState<BusinessIdea[]>([]);
+  const [allIdeaFormIdeas, setAllIdeaFormIdeas] = useState<IdeaFormSubmission[]>([]); // NEW
   const [playbook, setPlaybook] = useState<Playbook | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [ideaSetsRemaining, setIdeaSetsRemaining] = useState(2);
@@ -123,11 +135,11 @@ function App() {
         // Handle 429 limit errors
         if (response.status === 429) {
           if (result.reason === 'ip_limit') {
-            setLimitModal({ show: true, type: 'ideas', reason: 'ip_limit', userEmail: data.email });
+            setLimitModal({ show: true, type: 'ideas', reason: 'ip_limit', userEmail: data.email, flowType: 'quiz' });
             setCurrentView('home');
             return;
           } else if (result.reason === 'email_limit') {
-            setLimitModal({ show: true, type: 'ideas', reason: 'email_limit', userEmail: data.email });
+            setLimitModal({ show: true, type: 'ideas', reason: 'email_limit', userEmail: data.email, flowType: 'quiz' });
             setCurrentView('home');
             return;
           }
@@ -141,7 +153,7 @@ function App() {
         }
         if (result.blocked && result.reason === 'idea_limit') {
           analytics.ideaLimitReached();
-          setLimitModal({ show: true, type: 'ideas', reason: 'email_limit', userEmail: data.email });
+          setLimitModal({ show: true, type: 'ideas', reason: 'email_limit', userEmail: data.email, flowType: 'quiz' });
           setCurrentView('home');
           return;
         }
@@ -153,7 +165,7 @@ function App() {
       }
 
       setBusinessIdeas(result.ideas);
-      setAllBusinessIdeas(prev => [...prev, ...result.ideas]); // UPDATED: Accumulate ideas
+      setAllBusinessIdeas(prev => [...prev, ...result.ideas]);
       analytics.ideasGenerated(result.ideas.length);
 
       const newIdeaSetsRemaining = ideaSetsRemaining - 1;
@@ -179,6 +191,16 @@ function App() {
     setCurrentView('generatingPlaybook');
     setError(null);
 
+    // NEW: Save form submission for tracking
+    const formSubmission: IdeaFormSubmission = {
+      businessType: data.businessType === 'Other' ? data.businessTypeOther : data.businessType,
+      problemSolving: data.problemSolving,
+      targetCustomer: data.targetCustomer,
+      timeCommitment: data.timeCommitment === 'Other' ? data.timeCommitmentOther : data.timeCommitment,
+      skillsExperience: data.skillsExperience,
+    };
+    setAllIdeaFormIdeas(prev => [...prev, formSubmission]);
+
     try {
       const response = await fetch('/api/generate-playbook', {
         method: 'POST',
@@ -195,11 +217,11 @@ function App() {
         // Handle 429 limit errors
         if (response.status === 429) {
           if (result.reason === 'ip_limit') {
-            setLimitModal({ show: true, type: 'playbooks', reason: 'ip_limit', userEmail: data.email });
+            setLimitModal({ show: true, type: 'playbooks', reason: 'ip_limit', userEmail: data.email, flowType: 'idea_form' });
             setCurrentView('home');
             return;
           } else if (result.reason === 'email_limit') {
-            setLimitModal({ show: true, type: 'playbooks', reason: 'email_limit', userEmail: data.email });
+            setLimitModal({ show: true, type: 'playbooks', reason: 'email_limit', userEmail: data.email, flowType: 'idea_form' });
             setCurrentView('home');
             return;
           }
@@ -213,7 +235,7 @@ function App() {
         }
         if (result.blocked && result.reason === 'playbook_limit') {
           analytics.playbookLimitReached();
-          setLimitModal({ show: true, type: 'playbooks', reason: 'email_limit', userEmail: data.email });
+          setLimitModal({ show: true, type: 'playbooks', reason: 'email_limit', userEmail: data.email, flowType: 'idea_form' });
           setCurrentView('home');
           return;
         }
@@ -247,7 +269,8 @@ function App() {
 
   const handleBackToHome = () => {
     setCurrentView('home');
-    setAllBusinessIdeas([]); // UPDATED: Clear accumulated ideas on back
+    setAllBusinessIdeas([]);
+    setAllIdeaFormIdeas([]); // NEW: Clear idea form ideas
   };
 
   const handleSelectIdea = async (idea: BusinessIdea) => {
@@ -274,11 +297,11 @@ function App() {
         // Handle 429 limit errors
         if (response.status === 429) {
           if (result.reason === 'ip_limit') {
-            setLimitModal({ show: true, type: 'playbooks', reason: 'ip_limit', userEmail: quizData?.email });
+            setLimitModal({ show: true, type: 'playbooks', reason: 'ip_limit', userEmail: quizData?.email, flowType: 'quiz' });
             setCurrentView('showingIdeas');
             return;
           } else if (result.reason === 'email_limit') {
-            setLimitModal({ show: true, type: 'playbooks', reason: 'email_limit', userEmail: quizData?.email });
+            setLimitModal({ show: true, type: 'playbooks', reason: 'email_limit', userEmail: quizData?.email, flowType: 'quiz' });
             setCurrentView('showingIdeas');
             return;
           }
@@ -292,7 +315,7 @@ function App() {
         }
         if (result.blocked && result.reason === 'playbook_limit') {
           analytics.playbookLimitReached();
-          setLimitModal({ show: true, type: 'playbooks', reason: 'email_limit', userEmail: quizData?.email });
+          setLimitModal({ show: true, type: 'playbooks', reason: 'email_limit', userEmail: quizData?.email, flowType: 'quiz' });
           setCurrentView('showingIdeas');
           return;
         }
@@ -371,7 +394,9 @@ function App() {
           type={limitModal.type} 
           reason={limitModal.reason}
           userEmail={limitModal.userEmail}
-          ideas={allBusinessIdeas}
+          ideas={limitModal.flowType === 'idea_form' ? [] : allBusinessIdeas}
+          ideaFormIdeas={limitModal.flowType === 'idea_form' ? allIdeaFormIdeas : []}
+          flowType={limitModal.flowType}
           onSelectIdea={handleSelectIdea}
           onClose={() => setLimitModal({ show: false, type: null, reason: null })}
         />
@@ -660,19 +685,23 @@ function GeneratingPlaybookView() {
   );
 }
 
+// UPDATED: LimitModal with full logic for both flows
 interface LimitModalProps {
   type: 'ideas' | 'playbooks' | null;
   reason: 'ip_limit' | 'email_limit' | null;
   userEmail?: string;
   ideas: BusinessIdea[];
+  ideaFormIdeas?: IdeaFormSubmission[];
+  flowType?: 'quiz' | 'idea_form';
   onSelectIdea: (idea: BusinessIdea) => void;
   onClose: () => void;
 }
 
-function LimitModal({ type, reason, userEmail, ideas, onSelectIdea, onClose }: LimitModalProps) {
+function LimitModal({ type, reason, userEmail, ideas, ideaFormIdeas, flowType, onSelectIdea, onClose }: LimitModalProps) {
   const [showFeedback, setShowFeedback] = useState(false);
   const [showIdeas, setShowIdeas] = useState(false);
   const [selectedIdea, setSelectedIdea] = useState<BusinessIdea | null>(null);
+  const [selectedIdeaFormIdea, setSelectedIdeaFormIdea] = useState<IdeaFormSubmission | null>(null);
   const [feedbackData, setFeedbackData] = useState({
     selectedFeedback: [] as string[],
     otherFeedback: '',
@@ -683,6 +712,9 @@ function LimitModal({ type, reason, userEmail, ideas, onSelectIdea, onClose }: L
 
   const isIPLimit = reason === 'ip_limit';
   const isIdeas = type === 'ideas';
+  const isIdeaFormFlow = flowType === 'idea_form';
+  const ideaCount = isIdeaFormFlow ? ideaFormIdeas?.length : ideas.length;
+  const ideaText = isIdeaFormFlow ? 'great ideas' : 'great ideas';
 
   // IP Limit Message
   if (isIPLimit) {
@@ -716,9 +748,14 @@ function LimitModal({ type, reason, userEmail, ideas, onSelectIdea, onClose }: L
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
         <div className="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-8">
           <h2 className="text-2xl font-bold text-gray-900 mb-4 text-center">Monthly Limit Reached</h2>
-          <p className="text-gray-700 mb-8 leading-relaxed text-center">You've used your 2 free {isIdeas ? 'idea sets' : 'action plans'} for this month. You have {ideas.length} great ideas to choose from. Pick one, create an action plan, or come back next month for more ideas.</p>
+          <p className="text-gray-700 mb-8 leading-relaxed text-center">
+            You've used your 2 free {isIdeas ? 'idea sets' : 'action plans'} for this month. 
+            You have <strong>{ideaCount} {ideaText}</strong> to choose from. 
+            Pick one{isIdeaFormFlow ? ' and download your action plan' : ', create an action plan'}, 
+            or come back next month for more {isIdeas ? 'ideas' : 'action plans'}.
+          </p>
           <div className="space-y-3">
-            {ideas.length > 0 ? (
+            {ideaCount && ideaCount > 0 ? (
               <button
                 onClick={() => setShowIdeas(true)}
                 className="w-full px-6 py-3 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 transition-all"
@@ -744,8 +781,8 @@ function LimitModal({ type, reason, userEmail, ideas, onSelectIdea, onClose }: L
     );
   }
 
-  // Show Ideas View
-  if (showIdeas && !selectedIdea) {
+  // Show Ideas View - QUIZ FLOW
+  if (showIdeas && !selectedIdea && !selectedIdeaFormIdea && !isIdeaFormFlow) {
     return (
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
         <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full p-8 max-h-[85vh] overflow-y-auto">
@@ -778,8 +815,43 @@ function LimitModal({ type, reason, userEmail, ideas, onSelectIdea, onClose }: L
     );
   }
 
-  // Create Action Plan from Selected Idea
-  if (selectedIdea) {
+  // Show Ideas View - IDEA FORM FLOW
+  if (showIdeas && !selectedIdea && !selectedIdeaFormIdea && isIdeaFormFlow) {
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full p-8 max-h-[85vh] overflow-y-auto">
+          <h2 className="text-2xl font-bold text-gray-900 mb-2 text-center">Select an Idea to Download Your Action Plan</h2>
+          <p className="text-gray-600 text-center mb-6 text-sm">Click on any idea to download your action plan</p>
+          
+          <div className="space-y-3 mb-6">
+            {ideaFormIdeas?.map((idea, idx) => (
+              <button
+                key={idx}
+                onClick={() => setSelectedIdeaFormIdea(idea)}
+                className="w-full text-left border-2 border-gray-200 rounded-lg p-4 hover:border-indigo-600 hover:bg-indigo-50 transition-all"
+              >
+                <h4 className="font-semibold text-gray-900 mb-2">{idea.businessType} business that {idea.problemSolving} for {idea.targetCustomer}</h4>
+                <p className="text-sm text-gray-600">Time commitment: {idea.timeCommitment}</p>
+                {idea.skillsExperience && <p className="text-sm text-gray-600">Your experience: {idea.skillsExperience}</p>}
+              </button>
+            ))}
+          </div>
+
+          <div className="space-y-3">
+            <button
+              onClick={() => setShowIdeas(false)}
+              className="w-full px-6 py-3 text-gray-700 font-semibold rounded-lg border-2 border-gray-300 hover:bg-gray-50 transition-all"
+            >
+              Back
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Create Action Plan from Selected Idea (QUIZ FLOW)
+  if (selectedIdea && !isIdeaFormFlow) {
     return (
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
         <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full p-8">
@@ -799,6 +871,38 @@ function LimitModal({ type, reason, userEmail, ideas, onSelectIdea, onClose }: L
             </button>
             <button
               onClick={() => setSelectedIdea(null)}
+              className="w-full px-6 py-3 text-gray-700 font-semibold rounded-lg border-2 border-gray-300 hover:bg-gray-50 transition-all"
+            >
+              Choose Different Idea
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Download Action Plan (IDEA FORM FLOW)
+  if (selectedIdeaFormIdea && isIdeaFormFlow) {
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full p-8">
+          <h3 className="text-xl font-bold text-gray-900 mb-4">Download Your Action Plan</h3>
+          <p className="text-gray-700 mb-2">{selectedIdeaFormIdea.businessType} business</p>
+          <p className="text-sm text-gray-600 mb-4">{selectedIdeaFormIdea.problemSolving} for {selectedIdeaFormIdea.targetCustomer}</p>
+          <p className="text-sm text-gray-600 mb-6">Time commitment: {selectedIdeaFormIdea.timeCommitment}</p>
+          
+          <div className="space-y-3">
+            <button
+              onClick={() => {
+                alert('✓ Downloading your action plan PDF...');
+                onClose();
+              }}
+              className="w-full px-6 py-3 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 transition-all"
+            >
+              Download Plan
+            </button>
+            <button
+              onClick={() => setSelectedIdeaFormIdea(null)}
               className="w-full px-6 py-3 text-gray-700 font-semibold rounded-lg border-2 border-gray-300 hover:bg-gray-50 transition-all"
             >
               Choose Different Idea
