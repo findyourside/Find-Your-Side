@@ -750,8 +750,8 @@ function LimitModal({ type, reason, userEmail, ideas, ideaFormIdeas, flowType, o
           <h2 className="text-2xl font-bold text-gray-900 mb-4 text-center">Monthly Limit Reached</h2>
           <p className="text-gray-700 mb-8 leading-relaxed text-center">
             You've used your 2 free {isIdeas ? 'idea sets' : 'action plans'} for this month. 
-            You have <strong>{ideaCount} {ideaText}</strong> to choose from. 
-            Pick one{isIdeaFormFlow ? ' and download your action plan' : ', create an action plan'}, 
+            You have <strong>{ideaCount || 0} {ideaText}</strong> to choose from. 
+            Pick one{isIdeaFormFlow ? ' and create your action plan' : ', create an action plan'}, 
             or come back next month for more {isIdeas ? 'ideas' : 'action plans'}.
           </p>
           <div className="space-y-3">
@@ -760,7 +760,7 @@ function LimitModal({ type, reason, userEmail, ideas, ideaFormIdeas, flowType, o
                 onClick={() => setShowIdeas(true)}
                 className="w-full px-6 py-3 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 transition-all"
               >
-                View My Ideas
+                View My {ideaCount} Ideas
               </button>
             ) : null}
             <button
@@ -820,8 +820,8 @@ function LimitModal({ type, reason, userEmail, ideas, ideaFormIdeas, flowType, o
     return (
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
         <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full p-8 max-h-[85vh] overflow-y-auto">
-          <h2 className="text-2xl font-bold text-gray-900 mb-2 text-center">Select an Idea to Download Your Action Plan</h2>
-          <p className="text-gray-600 text-center mb-6 text-sm">Click on any idea to download your action plan</p>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2 text-center">Select an Idea to Create Your Action Plan</h2>
+          <p className="text-gray-600 text-center mb-6 text-sm">Click on any idea to create your action plan</p>
           
           <div className="space-y-3 mb-6">
             {ideaFormIdeas?.map((idea, idx) => (
@@ -881,12 +881,12 @@ function LimitModal({ type, reason, userEmail, ideas, ideaFormIdeas, flowType, o
     );
   }
 
-  // Download Action Plan (IDEA FORM FLOW)
+  // Create Action Plan (IDEA FORM FLOW)
   if (selectedIdeaFormIdea && isIdeaFormFlow) {
     return (
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
         <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full p-8">
-          <h3 className="text-xl font-bold text-gray-900 mb-4">Download Your Action Plan</h3>
+          <h3 className="text-xl font-bold text-gray-900 mb-4">Create Your Action Plan</h3>
           <p className="text-gray-700 mb-2">{selectedIdeaFormIdea.businessType} business</p>
           <p className="text-sm text-gray-600 mb-4">{selectedIdeaFormIdea.problemSolving} for {selectedIdeaFormIdea.targetCustomer}</p>
           <p className="text-sm text-gray-600 mb-6">Time commitment: {selectedIdeaFormIdea.timeCommitment}</p>
@@ -894,12 +894,12 @@ function LimitModal({ type, reason, userEmail, ideas, ideaFormIdeas, flowType, o
           <div className="space-y-3">
             <button
               onClick={() => {
-                alert('✓ Downloading your action plan PDF...');
+                alert('✓ Creating your action plan...');
                 onClose();
               }}
               className="w-full px-6 py-3 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 transition-all"
             >
-              Download Plan
+              Create Plan
             </button>
             <button
               onClick={() => setSelectedIdeaFormIdea(null)}
