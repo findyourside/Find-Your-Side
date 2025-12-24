@@ -42,7 +42,7 @@ export default async function handler(req, res) {
 
   // ===== LIMIT 2: EMAIL ADDRESS - 2 idea sets per month =====
   // Exempt email gets unlimited access
-  const EXEMPT_EMAIL = 'hello.findyourside.gmail.com';
+  const EXEMPT_EMAIL = 'hello.findyourside@gmail.com';
   
   if (userEmail && userEmail !== EXEMPT_EMAIL) {
     const currentMonth = new Date().toISOString().slice(0, 7); // YYYY-MM
@@ -126,21 +126,10 @@ Create 5 unique ideas. Each field under 15 words.`;
       throw new Error('Invalid ideas structure');
     }
 
-    // Save quiz response to Airtable
-    try {
-      await fetch(`${req.headers['x-forwarded-proto'] || 'https'}://${req.headers.host}/api/save-data`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          type: 'quiz',
-          email: userEmail,
-          data: answers
-        }),
-      });
-    } catch (err) {
-      console.error('Error saving quiz data:', err);
-      // Don't fail the request if saving fails
-    }
+    // ✅ FIXED: Do NOT save to Airtable here
+    // The frontend (App.tsx) will call /api/save-data after getting ideas
+    // This prevents duplicate entries
+    // See App.tsx handleQuizComplete() for where the save actually happens
 
     return res.status(200).json(ideas);
 
