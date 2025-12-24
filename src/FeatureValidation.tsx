@@ -36,16 +36,18 @@ export default function FeatureValidation({ userEmail }: FeatureValidationProps)
       const feedbackToSave = selectedFeatures.length > 0 ? selectedFeatures : ['Other'];
       
       // Create array of promises - one for each selected feedback
-      const savePromises = feedbackToSave.map(feedback =>
+      const savePromises = feedbackToSave.map((feedback, index) =>
         fetch('/api/save-data', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             type: 'action_plan_feedback',
-            email: userEmail,
+            // FIXED: Only send email on FIRST record (index === 0)
+            email: index === 0 ? userEmail : null,
             data: {
               selectedFeedback: feedback,
-              otherFeedback: customFeedback || ''
+              // FIXED: Only send additional comments on FIRST record
+              otherFeedback: index === 0 ? (customFeedback || '') : ''
             }
           }),
         })
