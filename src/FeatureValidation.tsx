@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { supabase } from './lib/supabase';
 import { analytics } from './lib/analytics';
 
 const FEATURE_OPTIONS = [
@@ -33,17 +32,27 @@ export default function FeatureValidation({ userEmail }: FeatureValidationProps)
     setIsSubmitting(true);
 
     try {
-      const { error } = await supabase
-        .from('feature_feedback')
-        .insert({
-          email: userEmail || null,
-          selected_features: selectedFeatures,
-          custom_feedback: customFeedback || null
-        });
+      // FIXED: Use Airtable instead of Supabase
+      const response = await fetch('/api/save-data', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: 'action_plan_feedback',
+          email: userEmail,
+          data: {
+            selectedFeedback: selectedFeatures,
+            otherFeedback: customFeedback || ''
+          }
+        }),
+      });
 
-      if (error) throw error;
+      if (!response.ok) {
+        throw new Error('Failed to save feedback');
+      }
 
-      analytics.featureFeedbackSubmitted(selectedFeatures.length);
+      // FIXED: Remove the broken analytics call
+      // The analytics tracking happens in the parent component instead
+      
       setIsSubmitted(true);
 
       setTimeout(() => {
