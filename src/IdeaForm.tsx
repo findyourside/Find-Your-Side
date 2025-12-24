@@ -26,7 +26,6 @@ interface ValidationErrors {
   timeCommitment?: string;
   timeCommitmentOther?: string;
   skillsExperience?: string;
-  email?: string;
 }
 
 export default function IdeaForm({ onComplete, onBack }: IdeaFormProps) {
@@ -40,7 +39,7 @@ export default function IdeaForm({ onComplete, onBack }: IdeaFormProps) {
     timeCommitment: '',
     timeCommitmentOther: '',
     skillsExperience: '',
-    email: '',
+    email: '', // KEPT for backend but NOT shown in form
   });
 
   const getCharacterCount = (text: string) => text.length;
@@ -85,12 +84,6 @@ export default function IdeaForm({ onComplete, onBack }: IdeaFormProps) {
       newErrors.skillsExperience = 'Maximum 300 characters allowed';
     }
 
-    if (!formData.email.trim()) {
-      newErrors.email = 'Email is required';
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      newErrors.email = 'Please enter a valid email address';
-    }
-
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -115,12 +108,13 @@ export default function IdeaForm({ onComplete, onBack }: IdeaFormProps) {
         ? formData.timeCommitmentOther
         : formData.timeCommitment;
 
+      // FIXED: Remove email from form submission (it's not collected anymore)
       const response = await fetch('/api/save-data', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           type: 'idea_form',
-          email: formData.email,
+          email: formData.email, // Still send empty email if needed by backend
           data: {
             businessType: businessTypeValue,
             problemSolving: formData.problemSolving,
@@ -389,30 +383,7 @@ export default function IdeaForm({ onComplete, onBack }: IdeaFormProps) {
               </div>
             </div>
 
-            {/* Field 6: Email */}
-            <div>
-              <label htmlFor="email" className="block text-lg font-semibold text-gray-900 mb-2">
-                Email (to receive your action plan) <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="email"
-                id="email"
-                value={formData.email}
-                onChange={(e) => {
-                  setFormData({ ...formData, email: e.target.value });
-                  if (errors.email) {
-                    setErrors({ ...errors, email: undefined });
-                  }
-                }}
-                placeholder="your.email@example.com"
-                className={`w-full px-4 py-3 text-base border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent ${
-                  errors.email ? 'border-red-300' : 'border-gray-200'
-                }`}
-              />
-              {errors.email && (
-                <p className="mt-2 text-sm text-red-600">{errors.email}</p>
-              )}
-            </div>
+            {/* REMOVED: Email field - no longer shown in form */}
 
             {/* Submit Button */}
             <button
