@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { analytics } from './lib/analytics';
 
 const FEATURE_OPTIONS = [
   'Extended action plan (30-60 days)',
@@ -32,26 +31,36 @@ export default function FeatureValidation({ userEmail }: FeatureValidationProps)
     setIsSubmitting(true);
 
     try {
-      // FIXED: Use Airtable instead of Supabase
-      const response = await fetch('/api/save-data', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          type: 'action_plan_feedback',
-          email: userEmail,
-          data: {
-            selectedFeedback: selectedFeatures,
-            otherFeedback: customFeedback || ''
-          }
-        }),
-      });
+      // NEW: Save EACH selected feedback as a SEPARATE record in Airtable
+      const feedbackToSave = selectedFeatures.length > 0 ? selectedFeatures : ['Other'];
+      
+      // Create array of promises - one for each selected feedback
+      const savePromises = feedbackToSave.map(feedback =>
+        fetch('/api/save-data', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            type: 'action_plan_feedback',
+            email: userEmail,
+            data: {
+              selectedFeedback: feedback, // CHANGED: Single string, not array
+              otherFeedback: customFeedback || ''
+            }
+          }),
+        })
+      );
 
-      if (!response.ok) {
-        throw new Error('Failed to save feedback');
+      // Wait for all records to save
+      const results = await Promise.all(savePromises);
+      
+      // Check if all saves were successful
+      const allSuccessful = results.every(response => response.ok);
+
+      if (!allSuccessful) {
+        throw new Error('Failed to save some feedback records');
       }
 
-      // FIXED: Remove the broken analytics call
-      // The analytics tracking happens in the parent component instead
+      console.log(`✅ Saved ${feedbackToSave.length} feedback record(s) to Airtable`);
       
       setIsSubmitted(true);
 
