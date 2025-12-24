@@ -69,10 +69,15 @@ export default async function handler(req, res) {
 
       case 'action_plan_feedback':
         tableId = TABLE_IDS.action_plan_feedback;
+        // UPDATED: Handle both single string and array formats
+        let selectedFeedback = data.selectedFeedback;
+        if (Array.isArray(selectedFeedback)) {
+          selectedFeedback = selectedFeedback.join(', ');
+        }
         fields = {
           Email: email,
-          'Selected Feedback': Array.isArray(data.selectedFeedback) ? data.selectedFeedback.join(', ') : data.selectedFeedback || '',
-          'Additional Comments': data.otherFeedback || data.additionalComments || '',
+          'Selected Feedback': selectedFeedback || '',
+          'Additional Comments': data.otherFeedback || '',
           Timestamp: new Date().toISOString(),
           Type: 'action_plan_feedback'
         };
@@ -80,9 +85,14 @@ export default async function handler(req, res) {
 
       case 'idea_limit_feedback':
         tableId = TABLE_IDS.idea_limit_feedback;
+        // UPDATED: Handle both single string and array formats
+        let limitFeedback = data.selectedFeedback;
+        if (Array.isArray(limitFeedback)) {
+          limitFeedback = limitFeedback.join(', ');
+        }
         fields = {
           Email: email,
-          'Selected Feedback': Array.isArray(data.selectedFeedback) ? data.selectedFeedback.join(', ') : data.selectedFeedback || '',
+          'Selected Feedback': limitFeedback || '',
           'Other Feedback': data.otherFeedback || '',
           Timestamp: new Date().toISOString(),
           Type: 'idea_limit_feedback'
