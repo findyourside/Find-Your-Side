@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Check } from 'lucide-react';
 
 const FEATURE_OPTIONS = [
   'Extended action plan (30-60 days)',
@@ -16,7 +17,7 @@ export default function FeatureValidation({ userEmail }: FeatureValidationProps)
   const [selectedFeatures, setSelectedFeatures] = useState<string[]>([]);
   const [customFeedback, setCustomFeedback] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isSubmitted, setIsSubmitted] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
 
   const handleFeatureToggle = (feature: string) => {
     setSelectedFeatures(prev =>
@@ -31,7 +32,7 @@ export default function FeatureValidation({ userEmail }: FeatureValidationProps)
     setIsSubmitting(true);
 
     try {
-      // NEW: Save EACH selected feedback as a SEPARATE record in Airtable
+      // Save EACH selected feedback as a SEPARATE record in Airtable
       const feedbackToSave = selectedFeatures.length > 0 ? selectedFeatures : ['Other'];
       
       // Create array of promises - one for each selected feedback
@@ -43,7 +44,7 @@ export default function FeatureValidation({ userEmail }: FeatureValidationProps)
             type: 'action_plan_feedback',
             email: userEmail,
             data: {
-              selectedFeedback: feedback, // CHANGED: Single string, not array
+              selectedFeedback: feedback,
               otherFeedback: customFeedback || ''
             }
           }),
@@ -62,12 +63,16 @@ export default function FeatureValidation({ userEmail }: FeatureValidationProps)
 
       console.log(`✅ Saved ${feedbackToSave.length} feedback record(s) to Airtable`);
       
-      setIsSubmitted(true);
+      // Show success message
+      setShowSuccess(true);
+      
+      // Clear form
+      setSelectedFeatures([]);
+      setCustomFeedback('');
 
+      // Hide success message after 5 seconds
       setTimeout(() => {
-        setIsSubmitted(false);
-        setSelectedFeatures([]);
-        setCustomFeedback('');
+        setShowSuccess(false);
       }, 5000);
     } catch (error) {
       console.error('Error submitting feedback:', error);
@@ -76,18 +81,6 @@ export default function FeatureValidation({ userEmail }: FeatureValidationProps)
       setIsSubmitting(false);
     }
   };
-
-  if (isSubmitted) {
-    return (
-      <div className="max-w-4xl mx-auto px-4 py-12">
-        <div className="p-8 bg-green-50 border border-green-200 rounded-lg text-center">
-          <div className="text-5xl mb-4">✓</div>
-          <h3 className="text-2xl font-bold text-green-800 mb-2">Thank you!</h3>
-          <p className="text-green-700">Your feedback helps us build better. Now go build something amazing!</p>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-12 border-t border-gray-200">
@@ -144,6 +137,21 @@ export default function FeatureValidation({ userEmail }: FeatureValidationProps)
         >
           {isSubmitting ? 'Sending...' : 'Submit Feedback'}
         </button>
+
+        {/* Success Toast - Appears at bottom after form submission */}
+        {showSuccess && (
+          <div className="mt-8 p-4 bg-white border-l-4 border-indigo-600 rounded-lg shadow-sm">
+            <div className="flex items-start gap-3">
+              <div className="w-6 h-6 rounded-full bg-indigo-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+                <Check className="w-4 h-4 text-indigo-600" strokeWidth={3} />
+              </div>
+              <div>
+                <p className="font-semibold text-gray-900">Thank you for your feedback!</p>
+                <p className="text-sm text-gray-600 mt-1">Your input helps us build better features.</p>
+              </div>
+            </div>
+          </div>
+        )}
       </form>
     </div>
   );
