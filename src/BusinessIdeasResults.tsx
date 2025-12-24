@@ -47,7 +47,8 @@ export default function BusinessIdeasResults({ ideas, onSelectIdea, onBack, idea
           playbooksRemaining={playbooksRemaining}
         />
 
-        <div className="text-center mb-12">
+        {/* FIXED: Changed mb-12 to mb-8 for less white space */}
+        <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-gray-900 mb-4">
             Your Personalized Business Ideas
           </h1>
@@ -69,7 +70,6 @@ export default function BusinessIdeasResults({ ideas, onSelectIdea, onBack, idea
                 <p className="text-sm font-semibold text-gray-700 mb-2">Why this fits you:</p>
                 <p className="text-gray-600 text-sm leading-relaxed">{idea.whyItFits}</p>
               </div>
-
               <button
                 onClick={() => onSelectIdea(idea)}
                 className="w-full flex items-center justify-center px-6 py-3 text-white font-semibold rounded-lg transition-all shadow-md hover:shadow-lg mt-auto"
