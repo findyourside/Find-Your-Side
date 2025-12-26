@@ -40,31 +40,40 @@ export default async function handler(req, res) {
     });
   }
 
-  // ===== LIMIT 2: EMAIL ADDRESS - 2 idea sets per month =====
-  // Exempt email gets unlimited access
+  // ===== LIMIT 2: EMAIL ADDRESS - 2 idea sets per 30 days =====
+  // FIXED (Issue #1): Changed from calendar month to 30-day rolling window
   const EXEMPT_EMAIL = 'hello.findyourside@gmail.com';
   
   if (userEmail && userEmail !== EXEMPT_EMAIL) {
-    const currentMonth = new Date().toISOString().slice(0, 7); // YYYY-MM
-    const emailLimitKey = `ideas-${userEmail}-${currentMonth}`;
+    // FIXED: Use 30-day rolling window instead of calendar month
+    const emailLimitKey = `ideas-${userEmail}`;
+    const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
 
-    global.emailLimitStore = global.emailLimitStore || {};
+    global.emailTimestamps = global.emailTimestamps || {};
 
-    if (!global.emailLimitStore[emailLimitKey]) {
-      global.emailLimitStore[emailLimitKey] = 0;
+    // Get the timestamp record for this email
+    if (!global.emailTimestamps[emailLimitKey]) {
+      global.emailTimestamps[emailLimitKey] = [];
     }
 
-    global.emailLimitStore[emailLimitKey]++;
+    // Remove timestamps older than 30 days
+    global.emailTimestamps[emailLimitKey] = global.emailTimestamps[emailLimitKey].filter(
+      timestamp => new Date(timestamp) > new Date(thirtyDaysAgo)
+    );
 
-    if (global.emailLimitStore[emailLimitKey] > 2) {
+    // Check if they've hit the limit (2 requests in last 30 days)
+    if (global.emailTimestamps[emailLimitKey].length >= 2) {
       return res.status(429).json({
         error: 'Monthly limit reached',
-        message: "You've used up your free 2 personalized idea sets. Come back next month for 2 more free sets.",
+        message: "You've used up your free 2 personalized idea sets in the last 30 days. Please come back after 30 days from your first request.",
         blocked: true,
         reason: 'email_limit',
         limitType: 'ideas'
       });
     }
+
+    // Add current timestamp
+    global.emailTimestamps[emailLimitKey].push(new Date().toISOString());
   }
 
   if (!answers?.interests?.length || !answers?.skills?.length) {
@@ -125,11 +134,6 @@ Create 5 unique ideas. Each field under 15 words.`;
     if (!ideas.ideas || !Array.isArray(ideas.ideas) || ideas.ideas.length === 0) {
       throw new Error('Invalid ideas structure');
     }
-
-    // ✅ FIXED: Do NOT save to Airtable here
-    // The frontend (App.tsx) will call /api/save-data after getting ideas
-    // This prevents duplicate entries
-    // See App.tsx handleQuizComplete() for where the save actually happens
 
     return res.status(200).json(ideas);
 
