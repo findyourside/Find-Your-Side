@@ -56,6 +56,7 @@ export default function EmailPreviewModal({
         </div>
 
         <div className="p-6">
+          {/* Email Header */}
           <div className="mb-6">
             <p className="text-sm text-gray-600 mb-1">To:</p>
             <p className="text-gray-900 font-semibold">{userEmail}</p>
@@ -64,29 +65,37 @@ export default function EmailPreviewModal({
           <div className="mb-6">
             <p className="text-sm text-gray-600 mb-1">Subject:</p>
             <p className="text-gray-900 font-semibold">
-              Your 30-Day Launch Playbook: {playbook.businessName}
+              Your 30-Day Launch Action Plan: {playbook.businessName}
             </p>
           </div>
 
+          {/* Email Content */}
           <div className="bg-gray-50 border-2 border-gray-200 rounded-lg p-6 mb-6">
             <p className="text-gray-800 mb-4">Hi there!</p>
+            
             <p className="text-gray-800 mb-4">
-              Your personalized 30-day launch playbook for <strong>{playbook.businessName}</strong> is
-              ready!
+              Your personalized 30-day launch action plan for <strong className="text-indigo-600">{playbook.businessName}</strong> is ready!
             </p>
+            
             <p className="text-gray-800 mb-4">{playbook.overview}</p>
+            
             <p className="text-gray-800 mb-4">
-              Your playbook includes {playbook.weeks.length} weeks of detailed tasks to help you launch
-              successfully.
+              Your action plan includes {playbook.weeks.length} weeks of tasks to help you launch successfully.
             </p>
+            
+            <div className="bg-white border-l-4 border-indigo-600 p-4 mb-4">
+              <p className="text-gray-900 font-bold mb-1">
+                Week 1: {playbook.weeks[0]?.title}
+              </p>
+              <p className="text-gray-600 text-sm">
+                Focus: {playbook.weeks[0]?.focusArea}
+              </p>
+            </div>
+            
             <p className="text-gray-800 mb-4">
-              <strong>Week 1: {playbook.weeks[0]?.title}</strong>
-              <br />
-              Focus: {playbook.weeks[0]?.focusArea}
+              Download your complete action plan and start building today!
             </p>
-            <p className="text-gray-800 mb-4">
-              Download your complete playbook and start building today!
-            </p>
+            
             <p className="text-gray-800">
               Good luck with your launch!
               <br />
@@ -94,7 +103,8 @@ export default function EmailPreviewModal({
             </p>
           </div>
 
-          <div className="mb-6 p-4 bg-blue-50 border-2 border-blue-200 rounded-lg">
+          {/* Optional Section */}
+          <div className="mb-6 p-4 bg-indigo-50 border-2 border-indigo-200 rounded-lg">
             <label className="flex items-start cursor-pointer">
               <input
                 type="checkbox"
@@ -107,13 +117,13 @@ export default function EmailPreviewModal({
                   Send me Day 1 tasks via email (Optional)
                 </p>
                 <p className="text-sm text-gray-600">
-                  We'll email you tomorrow with your Day 1 tasks to help you get started. You can
-                  unsubscribe anytime.
+                  We'll email you tomorrow with your Day 1 tasks to help you get started. You can unsubscribe anytime.
                 </p>
               </div>
             </label>
           </div>
 
+          {/* Action Buttons */}
           <div className="flex gap-4">
             <button
               onClick={onClose}
