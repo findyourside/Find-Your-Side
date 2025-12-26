@@ -108,14 +108,8 @@ export default function IdeaForm({ onComplete, onBack }: IdeaFormProps) {
     try {
       console.log('Saving idea form data...');
 
-      const businessTypeValue = formData.businessType === 'Other'
-        ? formData.businessTypeOther
-        : formData.businessType;
-
-      const timeCommitmentValue = formData.timeCommitment === 'Other'
-        ? formData.timeCommitmentOther
-        : formData.timeCommitment;
-
+      // FIXED: Send both businessType and businessTypeOther
+      // FIXED: Send both timeCommitment and timeCommitmentOther
       const response = await fetch('/api/save-data', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -123,10 +117,12 @@ export default function IdeaForm({ onComplete, onBack }: IdeaFormProps) {
           type: 'idea_form',
           email: formData.email,
           data: {
-            businessType: businessTypeValue,
+            businessType: formData.businessType,
+            businessTypeOther: formData.businessTypeOther,
             problemSolving: formData.problemSolving,
             targetCustomer: formData.targetCustomer,
-            timeCommitment: timeCommitmentValue,
+            timeCommitment: formData.timeCommitment,
+            timeCommitmentOther: formData.timeCommitmentOther,
             skillsExperience: formData.skillsExperience,
           }
         }),
