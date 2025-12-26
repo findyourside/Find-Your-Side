@@ -47,8 +47,8 @@ export default function BusinessIdeasResults({ ideas, onSelectIdea, onBack, idea
           playbooksRemaining={playbooksRemaining}
         />
 
-        {/* FIXED: Changed mb-12 to mb-8 for less white space */}
-        <div className="text-center mb-8">
+        {/* FIXED (Issue #2): Changed mb-12 to mb-6 for less white space at top */}
+        <div className="text-center mb-6">
           <h1 className="text-4xl font-bold text-gray-900 mb-4">
             Your Personalized Business Ideas
           </h1>
