@@ -619,7 +619,7 @@ function App() {
               </a>
             </p>
             <p className="text-gray-500 text-xs">
-              © 2025 Find Your Side. All rights reserved.
+              © 2026 Find Your Side. All rights reserved.
             </p>
           </div>
         </div>
