@@ -748,11 +748,12 @@ function LimitModal({ type, reason, userEmail, ideas, ideaFormIdeas, flowType, o
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
         <div className="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-8">
           <h2 className="text-2xl font-bold text-gray-900 mb-4 text-center">Monthly Limit Reached</h2>
+          {/* FIXED (Issue #3): Updated message for I Have An Idea flow */}
           <p className="text-gray-700 mb-8 leading-relaxed text-center">
-            You've used your 2 free {isIdeas ? 'idea sets' : 'action plans'} for this month. 
+            You've used your 2 free {isIdeas ? 'idea sets' : 'action plans'} in the last 30 days. 
             You have <strong>{ideaCount || 0} {ideaText}</strong> to choose from. 
             Pick one{isIdeaFormFlow ? ' and create your action plan' : ', create an action plan'}, 
-            or come back next month for more {isIdeas ? 'ideas' : 'action plans'}.
+            or come back in 30 days for more {isIdeas ? 'ideas' : 'action plans'}.
           </p>
           <div className="space-y-3">
             {ideaCount && ideaCount > 0 ? (
