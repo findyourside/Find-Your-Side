@@ -34,32 +34,42 @@ export default async function handler(req, res) {
     });
   }
 
-  // ===== LIMIT 2: EMAIL ADDRESS - 2 action plans per month =====
+  // ===== LIMIT 2: EMAIL ADDRESS - 2 action plans per 30 days =====
+  // FIXED (Issue #1): Changed from calendar month to 30-day rolling window
   const EXEMPT_EMAIL = 'hello.findyourside@gmail.com';
   const ideaFormData = req.body.ideaFormData;
   const userEmail = ideaFormData?.email || req.body.userEmail;
 
   if (userEmail && userEmail.toLowerCase() !== EXEMPT_EMAIL) {
-    const currentMonth = new Date().toISOString().slice(0, 7); // YYYY-MM
-    const emailLimitKey = `playbook-${userEmail}-${currentMonth}`;
+    // FIXED: Use 30-day rolling window instead of calendar month
+    const emailLimitKey = `playbook-${userEmail}`;
+    const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
 
-    global.emailLimitStore = global.emailLimitStore || {};
+    global.emailTimestamps = global.emailTimestamps || {};
 
-    if (!global.emailLimitStore[emailLimitKey]) {
-      global.emailLimitStore[emailLimitKey] = 0;
+    // Get the timestamp record for this email
+    if (!global.emailTimestamps[emailLimitKey]) {
+      global.emailTimestamps[emailLimitKey] = [];
     }
 
-    global.emailLimitStore[emailLimitKey]++;
+    // Remove timestamps older than 30 days
+    global.emailTimestamps[emailLimitKey] = global.emailTimestamps[emailLimitKey].filter(
+      timestamp => new Date(timestamp) > new Date(thirtyDaysAgo)
+    );
 
-    if (global.emailLimitStore[emailLimitKey] > 2) {
+    // Check if they've hit the limit (2 requests in last 30 days)
+    if (global.emailTimestamps[emailLimitKey].length >= 2) {
       return res.status(429).json({
         error: 'Monthly limit reached',
-        message: "You've used up your free 2 action plans. Come back next month for 2 more free plans.",
+        message: "You've used up your free 2 action plans in the last 30 days. Please come back after 30 days from your first request.",
         blocked: true,
         reason: 'email_limit',
         limitType: 'playbooks'
       });
     }
+
+    // Add current timestamp
+    global.emailTimestamps[emailLimitKey].push(new Date().toISOString());
   }
 
   console.log('Request body:', JSON.stringify(req.body, null, 2));
