@@ -1,0 +1,14 @@
+name: Security Audit
+on:
+  schedule:
+    - cron: '0 0 1 * *'  # Monthly on 1st
+  workflow_dispatch:
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+      - run: npm audit
+      - run: npm audit fix
