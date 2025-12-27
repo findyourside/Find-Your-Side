@@ -11,6 +11,7 @@ interface IdeaFormData {
   timeCommitmentOther: string;
   skillsExperience: string;
   email: string;
+  marketingConsent: boolean;
 }
 
 interface IdeaFormProps {
@@ -41,6 +42,7 @@ export default function IdeaForm({ onComplete, onBack }: IdeaFormProps) {
     timeCommitmentOther: '',
     skillsExperience: '',
     email: '',
+    marketingConsent: false,
   });
 
   const getCharacterCount = (text: string) => text.length;
@@ -124,6 +126,7 @@ export default function IdeaForm({ onComplete, onBack }: IdeaFormProps) {
             timeCommitment: formData.timeCommitment,
             timeCommitmentOther: formData.timeCommitmentOther,
             skillsExperience: formData.skillsExperience,
+            marketingConsent: formData.marketingConsent,
           }
         }),
       });
@@ -386,7 +389,7 @@ export default function IdeaForm({ onComplete, onBack }: IdeaFormProps) {
               </div>
             </div>
 
-            {/* Field 6: Email - RESTORED */}
+            {/* Field 6: Email */}
             <div>
               <label htmlFor="email" className="block text-lg font-semibold text-gray-900 mb-2">
                 Email (to receive your action plan) <span className="text-red-500">*</span>
@@ -409,6 +412,23 @@ export default function IdeaForm({ onComplete, onBack }: IdeaFormProps) {
               {errors.email && (
                 <p className="mt-2 text-sm text-red-600">{errors.email}</p>
               )}
+            </div>
+
+            {/* MARKETING OPT-IN CHECKBOX */}
+            <div className="p-4 bg-yellow-50 border-2 border-yellow-400 rounded-lg">
+              <label className="flex items-start cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={formData.marketingConsent}
+                  onChange={(e) => setFormData({ ...formData, marketingConsent: e.target.checked })}
+                  className="w-5 h-5 mt-0.5 flex-shrink-0"
+                  style={{ accentColor: '#4F46E5' }}
+                />
+                <span className="ml-3 text-base text-yellow-900">
+                  <strong>Notify me when new features are available</strong>{' '}
+                  <span className="text-yellow-700 font-normal italic">(optional)</span>
+                </span>
+              </label>
             </div>
 
             {/* Submit Button */}
