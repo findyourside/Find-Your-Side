@@ -13,6 +13,7 @@ interface QuizData {
   goalOther: string;
   experience: string;
   email: string;
+  marketingConsent: boolean;
 }
 
 interface QuizProps {
@@ -34,6 +35,7 @@ export default function Quiz({ onComplete, onBack }: QuizProps) {
     goalOther: '',
     experience: '',
     email: '',
+    marketingConsent: false,
   });
 
   const handleSkillToggle = (skill: string) => {
@@ -88,6 +90,7 @@ export default function Quiz({ onComplete, onBack }: QuizProps) {
               goal: formData.goal,
               goalOther: formData.goalOther,
               experience: formData.experience,
+              marketingConsent: formData.marketingConsent,
             }
           }),
         });
@@ -441,6 +444,23 @@ export default function Quiz({ onComplete, onBack }: QuizProps) {
                 className="w-full px-4 py-4 text-lg border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:border-transparent"
                 style={{ '--tw-ring-color': '#4F46E5' } as React.CSSProperties}
               />
+
+              {/* MARKETING OPT-IN CHECKBOX */}
+              <div className="mt-6 p-4 bg-yellow-50 border-2 border-yellow-400 rounded-lg">
+                <label className="flex items-start cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={formData.marketingConsent}
+                    onChange={(e) => setFormData({ ...formData, marketingConsent: e.target.checked })}
+                    className="w-5 h-5 mt-0.5 flex-shrink-0"
+                    style={{ accentColor: '#4F46E5' }}
+                  />
+                  <span className="ml-3 text-base text-yellow-900">
+                    <strong>Notify me when new features are available</strong>{' '}
+                    <span className="text-yellow-700 font-normal italic">(optional)</span>
+                  </span>
+                </label>
+              </div>
             </div>
           )}
 
